@@ -24,7 +24,7 @@ So we have
 
 Nice when it gets it right!
 
-To build the c++ code you'll need tensorflow and bazel - The build fine on my osx and linux installs and also on docker images
+To build the c++ code you'll need tensorflow and bazel - This builds fine on my osx and linux installs and also on docker images
 running on my machines, I've not had any problems so far except when my tensorflow and bazel versions have got out of sync.
 Easily solved.
 
