@@ -1,0 +1,27 @@
+extends layout
+
+head
+    title Classify
+
+block content
+    script(src='/javascripts/boxes.js')
+    h3= 'Image Classification'
+    p(class="container" id="drawing")
+        img(class="contained" id="raw_image", src='data:image/jpg;base64,#{imageData}')
+        canvas(class="contained bottom" id='body_canvas')
+        canvas(class="contained top" id='face_canvas')
+
+    <ul id="timings">Classify time #{classifyTime}ms
+        
+    p(class="text")
+        ul(id="scores")
+        
+    script.
+        drawBox("drawing", 'body_canvas', #{imageJson}, "255,255,255", 3.0, "raw_image");
+        drawBox("drawing", 'face_canvas', #{faceJson}, "255,0,0", 0.6, "raw_image");
+        classify("scores", #{classificationJson});
+        
+
+    form(action="/classify", method="post", enctype="multipart/form-data")
+        input(type="file", name="image")
+        button(type="submit", value="Upload") Upload File

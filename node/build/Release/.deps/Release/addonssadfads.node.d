@@ -1,0 +1,1 @@
+cmd_Release/addonssadfads.node := c++ -bundle -undefined dynamic_lookup -Wl,-no_pie -Wl,-search_paths_first -mmacosx-version-min=10.7 -arch x86_64 -L./Release -stdlib=libc++  -o Release/addonssadfads.node Release/obj.target/addonssadfads/addons/classify.o ~/projects/tensorflow/bazel-bin/tensorflow/cc/classifier/libclassifier.so

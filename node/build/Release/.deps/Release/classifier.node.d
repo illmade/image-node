@@ -1,0 +1,1 @@
+cmd_Release/classifier.node := c++ -bundle -undefined dynamic_lookup -Wl,-no_pie -Wl,-search_paths_first -mmacosx-version-min=10.7 -arch x86_64 -L./Release -stdlib=libc++  -o Release/classifier.node Release/obj.target/classifier/addons/classify.o ~/projects/tensorflow/bazel-bin/tensorflow/cc/multiclassify/libmulticlassifier.so
