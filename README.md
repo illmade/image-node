@@ -15,6 +15,7 @@ The smallest model - face detection and alignment needs more work as it is not a
 I've provided a python notebook that leads through the tensorflow graph that we freeze and export for use in c++.
 
 Here's a basic output: 
+
 ![alt tag](/resources/canoe_output.jpg) 
 
 So we have 
@@ -32,3 +33,6 @@ There's a detailed run through of getting some of the parts working [here](http:
 
 A simple way to get the python notebook running is to use one of tensorflow docker images with the py directory contents.
 
+I've got this running on osx and in docker images - the next step is to try out images on amazon and google and do some performance analysis.
+
+This is pretty much *my first c++ app* so I'm sure it's far from perfect: though it's stable enough for an alpha phase of development.
