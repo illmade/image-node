@@ -121,12 +121,21 @@ void FaceAlign::CreateBoxes(Tensor imageTensor, std::vector<Tensor>* locationTen
         buffer.seekp (pos-2);
         
         if (alignments>1){
+            
             auto alignmentTensor = (*locationTensors)[1].flat<float>();
+            auto adjustTensor = (*locationTensors)[2].flat<float>();
+            LOG(INFO) << "aGather " << (*locationTensors)[2].DebugString();
             
             buffer << "], 'alignments': [";
             
             for (int pos = 0; pos < number; ++pos) {
                 int start = pos * 10;
+                int boxStart = pos * 9;
+                
+                auto aleft = adjustTensor(boxStart+1);
+                auto atop = adjustTensor(boxStart);
+                auto aright = adjustTensor(boxStart+3);
+                auto abottom = adjustTensor(boxStart+2);
                 
                 auto x1 = alignmentTensor(start);
                 auto y1 = alignmentTensor(start+5);
@@ -139,7 +148,9 @@ void FaceAlign::CreateBoxes(Tensor imageTensor, std::vector<Tensor>* locationTen
                 auto x5 = alignmentTensor(start+4);
                 auto y5 = alignmentTensor(start+9);
                 
-                buffer << "{'alignment': ["
+                buffer << "{'adjust': [" << aleft << "," << atop << "," << aright << "," << abottom << "], ";
+                
+                buffer << "'alignment': ["
                 << "[" << x1 << ", " << y1 << "], "
                 << "[" << x2 << ", " << y2 << "], "
                 << "[" << x3 << ", " << y3 << "], "
@@ -718,13 +729,13 @@ Status FaceAlign::RNet(Tensor imageTensor, Tensor pnetTensor, std::vector<Tensor
             
             std::vector<Tensor> oGatherOutputs;
             
-            std::vector<std::pair<string, tensorflow::Tensor>> o_gatherFeed = {
+            std::vector<std::pair<string, tensorflow::Tensor>> oGatherFeed = {
                 {"gather/indices:0", oNmsOutputs[0]},
                 {"gather/values:0", oRegressionOutputs[0]}
             };
             
             Status oGatherStatus =
-            faceSession->get()->Run(o_gatherFeed,
+            faceSession->get()->Run(oGatherFeed,
                                     {"gather/output:0"},
                                     {},
                                     &oGatherOutputs);
@@ -734,7 +745,7 @@ Status FaceAlign::RNet(Tensor imageTensor, Tensor pnetTensor, std::vector<Tensor
                 return oGatherStatus;
             }
             else {
-                FILE_LOG(logDEBUG) << "Got o_gather";
+                FILE_LOG(logDEBUG) << "Got oGather";
             }
             
             std::vector<Tensor> oAlignOutputs;
@@ -755,13 +766,35 @@ Status FaceAlign::RNet(Tensor imageTensor, Tensor pnetTensor, std::vector<Tensor
                 return oAlignStatus;
             }
             else {
-                FILE_LOG(logDEBUG) << "Got o_align";
+                FILE_LOG(logDEBUG) << "Got oAlign";
+            }
+            
+            std::vector<Tensor> aGatherOutputs;
+            
+            std::vector<std::pair<string, tensorflow::Tensor>> aGatherFeed = {
+                {"gather/indices:0", oNmsOutputs[0]},
+                {"gather/values:0", oNetPostOutputs[0]}
+            };
+            
+            Status aGatherStatus =
+            faceSession->get()->Run(aGatherFeed,
+                                    {"gather/output:0"},
+                                    {},
+                                    &aGatherOutputs);
+            
+            if (!aGatherStatus.ok()) {
+                LOG(ERROR) << "Running pick model failed: " << aGatherStatus;
+                return aGatherStatus;
+            }
+            else {
+                FILE_LOG(logDEBUG) << "Got aGather";
             }
             
             FILE_LOG(logDEBUG) << "stage 3 gather" << oGatherOutputs[0].DebugString();
             
             rnetTensors->push_back(oGatherOutputs[0]);
             rnetTensors->push_back(oAlignOutputs[0]);
+            rnetTensors->push_back(aGatherOutputs[0]);
         }
         else {
             LOG(INFO) << "no 3 gather returning r gather";

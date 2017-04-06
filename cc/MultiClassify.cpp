@@ -1,12 +1,13 @@
 //
 //  MultiClassify.cpp
-//  
+//
 //
 //  Created by tim on 23/03/2017.
 //
 //
 #include <fstream>
 #include <memory>
+
 #include "MultiClassify.hpp"
 #include "GraphLoader.hpp"
 #include "Classifier.hpp"
@@ -149,7 +150,7 @@ void MultiClassify::ClassifyFile(std::string fileName){
     Classify(asString, 1, json);
     
     Align(asString, 1, json);
-
+    
     timestamp_t t1 = timer::get_timestamp();
     
     double classifyTime = (t1 - t0);
@@ -159,6 +160,35 @@ void MultiClassify::ClassifyFile(std::string fileName){
 int MultiClassify::Align(std::string byteString, int encoding, std::string* json){
     std::vector<Tensor> imageTensors;
     auto importStatus = imageGraph->ProccessImage(byteString, encoding, &imageTensors);
+    
+    int width = imageTensors[0].shape().dim_size(2);
+    int height = imageTensors[0].shape().dim_size(1);
+    
+    float maximum = std::max(width, height);
+    
+    if (maximum>600){
+        float scaling = 600.0 / maximum;
+        int newWidth = (int)(width * scaling);
+        int newHeight = (int)(height * scaling);
+        
+        LOG(INFO) << "Scaling to max size " << newWidth << ", " << newHeight;
+        
+        Scope localRoot = Scope::NewRootScope();
+        
+        std::vector<Tensor> resizeOutputs;
+        
+        auto imageOutput = ResizeBilinear(localRoot,
+                                          imageTensors[0],
+                                          {newHeight, newWidth});
+        
+        FILE_LOG(logDEBUG) << "Scaling to max size " << newWidth << ", " << newHeight;
+        
+        ClientSession session(localRoot);
+        auto scaleStatus = session.Run({imageOutput}, &resizeOutputs);
+        
+        imageTensors[0] = resizeOutputs[0];
+        
+    }
     
     return faceAlign -> ReadAndRun(&imageTensors, json, &faceSession);
 }
@@ -203,7 +233,7 @@ int MultiClassify::Box(std::string byteString, int encoding, std::string* json){
     auto scaleStatus = session.Run({imageOutput}, &resizeOutputs);
     
     imageTensors.push_back(resizeOutputs[0]);
-
+    
     return multibox -> ReadAndRun(&imageTensors, json, &boxSession);
 }
 

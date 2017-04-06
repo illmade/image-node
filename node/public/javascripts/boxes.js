@@ -98,6 +98,19 @@ function drawFace(containerId, canvasId, json, color, scoreMultiplier, canvasIma
         var w = box[2] - x;
         var h = box[3] - y;
         
+        var adjust = json.alignments[i].adjust;
+        var ax = adjust[0];
+        var ay = adjust[1];
+        
+        var aw = adjust[2] - ax;
+        var ah = adjust[3] - ay;
+        
+        var xscale = w / aw;
+        var yscale = h / ah;
+        
+        var xshift = x - ax;
+        var yshift = y - ay;
+        
         var points = json.alignments[i].alignment;
         
         context.beginPath();
@@ -117,8 +130,12 @@ function drawFace(containerId, canvasId, json, color, scoreMultiplier, canvasIma
         context.beginPath();
         
         for (p=0; p<points.length; p++){
-        	var px = x + points[p][0] * w;
-        	var py = y + points[p][1] * h;
+        	var pxa = x + points[p][0] * w;
+        	var pya = y + points[p][1] * h;
+            
+            var px = (x - xshift + points[p][0] * w / xscale) ;
+            var py = (y - yshift + points[p][1] * h / yscale) ;
+            
         	context.moveTo(px, py);
         	context.arc(px, py, 1, 0,2*Math.PI);
         }
