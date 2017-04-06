@@ -10,7 +10,7 @@
 #include "MultiClassify.hpp"
 #include "Multibox.hpp"
 #include "ImageGraph.hpp"
-#include "log.h"
+#include "log.hpp"
 #include <memory>
 
 #include "tensorflow/cc/client/client_session.h"
@@ -26,10 +26,7 @@ int main() {
     
     LOG(INFO) << "initializing";
     std::string root = "/Users/tim/projects/tensorflow/tensorflow/cc/multiclassify/";
-    
-//    std::unique_ptr<ImageGraph> imageGraph(new ImageGraph());
     std::unique_ptr<MultiClassify> multiClassify(new MultiClassify(root, "INFO"));
-    
     LOG(INFO) << "ready to classify";
     string fileName = "/Users/tim/projects/tensorflow/tensorflow/cc/multiclassify/data/street_smaller.jpg";
     multiClassify->ClassifyFile(fileName);

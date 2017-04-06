@@ -6,7 +6,7 @@
 #include "Multibox.hpp"
 
 #include "timer.hpp"
-#include "log.h"
+#include "log.hpp"
 
 #include <fstream>
 #include <memory>

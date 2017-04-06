@@ -7,7 +7,7 @@
 //
 #include "ImageGraph.hpp"
 
-#include "log.h"
+#include "log.hpp"
 
 #include <fstream>
 #include <memory>

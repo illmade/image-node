@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <memory>
+
 #include "tensorflow/cc/client/client_session.h"
 #include "tensorflow/cc/ops/standard_ops.h"
 #include "tensorflow/core/framework/tensor.h"
@@ -37,11 +38,11 @@ extern "C" {
             tensorflow::Status PNet(tensorflow::Tensor imageTensor, tensorflow::Tensor* pnetTensor,
                                     std::unique_ptr<tensorflow::Session>* faceSession);
             tensorflow::Status RNet(tensorflow::Tensor imageTensor, tensorflow::Tensor pnetTensor,
-                                    tensorflow::Tensor* rnetTensor,
+                                    std::vector<tensorflow::Tensor>* rnetTensors,
                                     std::unique_ptr<tensorflow::Session>* faceSession);
             
-            void CreateBoxes(tensorflow::Tensor imageTensor, tensorflow::Tensor locations, std::string* json);
-                   
+            void CreateBoxes(tensorflow::Tensor imageTensor, std::vector<tensorflow::Tensor>* locationTensors, std::string* json);
+            
         };
     }
     

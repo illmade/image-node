@@ -56,7 +56,7 @@ exports.uploadImage = function(req, res, next){
         var faces = classifier.align(img, fileType);
         hrend = process.hrtime(hrstart);
         var timeTaken = hrend[1]/1000000;
-        var secs = hrend[0] + "." + timeTaken;
+        var secs = hrend[0] + "" + timeTaken;
         console.timeEnd("classify");
         console.log(secs);
 

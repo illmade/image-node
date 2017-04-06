@@ -18,7 +18,7 @@ block content
         
     script.
         drawBox("drawing", 'body_canvas', #{imageJson}, "255,255,255", 3.0, "raw_image");
-        drawBox("drawing", 'face_canvas', #{faceJson}, "255,0,0", 0.6, "raw_image");
+        drawFace("drawing", 'face_canvas', #{faceJson}, "255,0,0", 0.6, "raw_image");
         classify("scores", #{classificationJson});
         
 

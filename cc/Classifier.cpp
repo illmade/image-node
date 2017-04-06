@@ -7,7 +7,7 @@
 #include <fstream>
 #include "Classifier.hpp"
 #include "timer.hpp"
-#include "log.h"
+#include "log.hpp"
 #include "tensorflow/cc/client/client_session.h"
 #include "tensorflow/cc/ops/standard_ops.h"
 #include "tensorflow/core/framework/tensor.h"

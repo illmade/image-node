@@ -14,7 +14,7 @@
 #include "Multibox.hpp"
 
 #include "timer.hpp"
-#include "log.h"
+#include "log.hpp"
 
 #include "tensorflow/cc/client/client_session.h"
 #include "tensorflow/cc/ops/standard_ops.h"

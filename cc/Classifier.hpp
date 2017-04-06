@@ -4,11 +4,11 @@
 //  Created by tim on 23/02/2017.
 //
 #include <memory>
+#include <stdio.h>
 #include "tensorflow/cc/client/client_session.h"
 #include "tensorflow/cc/ops/standard_ops.h"
 #include "tensorflow/core/framework/tensor.h"
 #include "tensorflow/core/public/session.h"
-#include <stdio.h>
 
 #ifndef classifier_hpp
 #define classifier_hpp

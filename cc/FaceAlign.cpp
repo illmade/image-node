@@ -1,13 +1,13 @@
 //
 //  FaceAlign.cpp
-//  
+//
 //
 //  Created by tim on 08/03/2017.
 //
 //
 #include "FaceAlign.hpp"
 #include "timer.hpp"
-#include "log.h"
+#include "log.hpp"
 
 #include <memory>
 #include <fstream>
@@ -45,7 +45,7 @@ FaceAlign::FaceAlign(){
     nmsThresholdT.scalar<float>()() = 0.5;
     nmsThresholdP = Tensor(DT_FLOAT, TensorShape({1}));
     nmsThresholdP.scalar<float>()() = 0.6;
-
+    
     FILE_LOG(logDEBUG) << "initializing Done";
 }
 
@@ -58,17 +58,17 @@ int FaceAlign::ReadAndRun(std::vector<Tensor>* imageTensors, std::string* json,
                           std::unique_ptr<tensorflow::Session>* faceSession){
     
     timestamp_t t0 = timer::get_timestamp();
-
+    
     FILE_LOG(logDEBUG) << "main session about to run: ";
     
     Tensor pNetOutput;
-    Tensor rNetOutput;
+    std::vector<Tensor> rNetOutput;
     
     PNet((*imageTensors)[0], &pNetOutput, faceSession);
     RNet((*imageTensors)[0], pNetOutput, &rNetOutput, faceSession);
     
-    FILE_LOG(logDEBUG) << "creating ouput " << rNetOutput.DebugString();
-    CreateBoxes((*imageTensors)[0], rNetOutput, json);
+    FILE_LOG(logDEBUG) << "creating ouput " << rNetOutput[0].DebugString();
+    CreateBoxes((*imageTensors)[0], &rNetOutput, json);
     
     timestamp_t t1 = timer::get_timestamp();
     double classifyTime = (t1 - t0);
@@ -80,31 +80,36 @@ int FaceAlign::ReadAndRun(std::vector<Tensor>* imageTensors, std::string* json,
 //
 // Given the image tensor and the identified locations create the json to send back
 //
-void FaceAlign::CreateBoxes(Tensor imageTensor, Tensor locations, std::string* json){
+void FaceAlign::CreateBoxes(Tensor imageTensor, std::vector<Tensor>* locationTensors, std::string* json){
     
-    int number = locations.shape().dim_size(0);
+    float scoreMutliplier = 1.;
+    float alignments = sizeof(*locationTensors);
+    
+    if (alignments<2){
+        scoreMutliplier = 0.5;
+    }
+    
+    int number = (*locationTensors)[0].shape().dim_size(0);
     
     float width = imageTensor.shape().dim_size(2);
     float height = imageTensor.shape().dim_size(1);
     
     FILE_LOG(logDEBUG) << "w " << width << " h " << height;
-    FILE_LOG(logDEBUG) << "Number of boxes: " << number << " " << locations.DebugString();
-
+    FILE_LOG(logDEBUG) << "Number of boxes: " << number << " " << (*locationTensors)[0].DebugString();
+    
     std::ostringstream buffer;
     buffer << "{'size': [" << width << ", " << height << "], 'locations': [";
     
     if (number > 0){
-        auto boxTensor = locations.flat<float>();
+        auto boxTensor = (*locationTensors)[0].flat<float>();
         
         for (int pos = 0; pos < number; ++pos) {
-            auto row = locations.Slice(pos, pos+1);
-            
             int start = pos * 9;
             auto left = boxTensor(start+1);
             auto top = boxTensor(start);
             auto right = boxTensor(start+3);
             auto bottom = boxTensor(start+2);
-            auto score = boxTensor(start+4);
+            auto score = boxTensor(start+4) * scoreMutliplier;
             
             buffer << "{'location': [" << left << ", "
             << top << ", "
@@ -112,9 +117,41 @@ void FaceAlign::CreateBoxes(Tensor imageTensor, Tensor locations, std::string* j
             << bottom << "], 'score': "
             << score << "}, ";
         }
-        
         long pos = buffer.tellp();
         buffer.seekp (pos-2);
+        
+        if (alignments>1){
+            auto alignmentTensor = (*locationTensors)[1].flat<float>();
+            
+            buffer << "], 'alignments': [";
+            
+            for (int pos = 0; pos < number; ++pos) {
+                int start = pos * 10;
+                
+                auto x1 = alignmentTensor(start);
+                auto y1 = alignmentTensor(start+5);
+                auto x2 = alignmentTensor(start+1);
+                auto y2 = alignmentTensor(start+6);
+                auto x3 = alignmentTensor(start+2);
+                auto y3 = alignmentTensor(start+7);
+                auto x4 = alignmentTensor(start+3);
+                auto y4 = alignmentTensor(start+8);
+                auto x5 = alignmentTensor(start+4);
+                auto y5 = alignmentTensor(start+9);
+                
+                buffer << "{'alignment': ["
+                << "[" << x1 << ", " << y1 << "], "
+                << "[" << x2 << ", " << y2 << "], "
+                << "[" << x3 << ", " << y3 << "], "
+                << "[" << x4 << ", " << y4 << "], "
+                << "[" << x5 << ", " << y5 << "]"
+                << "]}, ";
+            }
+            long pos = buffer.tellp();
+            buffer.seekp (pos-2);
+            
+        }
+        
         buffer.write (" ]}",3);
     }
     else {
@@ -186,7 +223,7 @@ Status FaceAlign::PNet(Tensor imageTensorIn, Tensor* pnetTensor,
         auto imageOutput = ResizeBilinear(localRoot,
                                           imageTensor,
                                           {outH, outW});
-    
+        
         FILE_LOG(logDEBUG) << "SCALE session about to run: ";
         
         session.Run({imageOutput}, &scaleOutputs);
@@ -200,10 +237,10 @@ Status FaceAlign::PNet(Tensor imageTensorIn, Tensor* pnetTensor,
         };
         
         Status pNetStatus =
-            faceSession->get()->Run(pnetFeed,
-                         {"pnet/conv4-2/BiasAdd:0", "pnet/prob1:0"},
-                         {},
-                         &pNetOutputs);
+        faceSession->get()->Run(pnetFeed,
+                                {"pnet/conv4-2/BiasAdd:0", "pnet/prob1:0"},
+                                {},
+                                &pNetOutputs);
         
         if (!pNetStatus.ok()) {
             LOG(ERROR) << "Running model failed: " << pNetStatus;
@@ -230,11 +267,11 @@ Status FaceAlign::PNet(Tensor imageTensorIn, Tensor* pnetTensor,
         };
         
         Status heatmapStatus =
-            faceSession->get()->Run( heatmapFeed,
-                                     {"heatmap/bounds_output:0"},
-                                     {},
-                                     &heatmapOutputs
-                                    );
+        faceSession->get()->Run( heatmapFeed,
+                                {"heatmap/bounds_output:0"},
+                                {},
+                                &heatmapOutputs
+                                );
         
         if (!heatmapStatus.ok()) {
             LOG(ERROR) << "Running heatmap model failed: " << heatmapStatus;
@@ -254,10 +291,10 @@ Status FaceAlign::PNet(Tensor imageTensorIn, Tensor* pnetTensor,
         };
         
         Status nmsStatus =
-            faceSession->get()->Run(nmsFeed,
-                         {"nms/output:0"},
-                         {},
-                         &nmsOutputs);
+        faceSession->get()->Run(nmsFeed,
+                                {"nms/output:0"},
+                                {},
+                                &nmsOutputs);
         
         FILE_LOG(logDEBUG) << "nms counter" << nmsOutputs[0].DebugString();
         
@@ -278,9 +315,9 @@ Status FaceAlign::PNet(Tensor imageTensorIn, Tensor* pnetTensor,
             
             Status pickStatus =
             faceSession->get()->Run(pickFeed,
-                             {"gather/output:0"},
-                             {},
-                             &pickOutputs);
+                                    {"gather/output:0"},
+                                    {},
+                                    &pickOutputs);
             
             if (!pickStatus.ok()) {
                 LOG(ERROR) << "Running pick model failed: " << pickStatus;
@@ -313,10 +350,10 @@ Status FaceAlign::PNet(Tensor imageTensorIn, Tensor* pnetTensor,
         std::vector<Tensor> nmsOutputs;
         
         Status nmsStatus =
-            faceSession->get()->Run(nmsFeed,
-                         {"nms/output:0"},
-                         {},
-                         &nmsOutputs);
+        faceSession->get()->Run(nmsFeed,
+                                {"nms/output:0"},
+                                {},
+                                &nmsOutputs);
         
         auto count = nmsOutputs[0].shape().dim_size(0);
         
@@ -333,10 +370,10 @@ Status FaceAlign::PNet(Tensor imageTensorIn, Tensor* pnetTensor,
             };
             
             Status pickStatus =
-                faceSession->get()->Run(pickFeed,
-                             {"gather/output:0"},
-                             {},
-                             &pickOutputs);
+            faceSession->get()->Run(pickFeed,
+                                    {"gather/output:0"},
+                                    {},
+                                    &pickOutputs);
             
             if (!pickStatus.ok()) {
                 LOG(ERROR) << "Running pick model failed: " << pickStatus;
@@ -359,7 +396,7 @@ Status FaceAlign::PNet(Tensor imageTensorIn, Tensor* pnetTensor,
 
 
 
-Status FaceAlign::RNet(Tensor imageTensor, Tensor pnetTensor, Tensor* rnetTensor,
+Status FaceAlign::RNet(Tensor imageTensor, Tensor pnetTensor, std::vector<Tensor>* rnetTensors,
                        std::unique_ptr<tensorflow::Session>* faceSession){
     
     float width = imageTensor.shape().dim_size(2);
@@ -379,7 +416,7 @@ Status FaceAlign::RNet(Tensor imageTensor, Tensor pnetTensor, Tensor* rnetTensor
     };
     
     Status pRegressionStatus =
-        faceSession->get()->Run(pRegressionFeed,
+    faceSession->get()->Run(pRegressionFeed,
                             {"regression/output_stack:0"},
                             {},
                             &pRegressionOutputs);
@@ -419,10 +456,10 @@ Status FaceAlign::RNet(Tensor imageTensor, Tensor pnetTensor, Tensor* rnetTensor
     };
     
     Status rCropStatus =
-        faceSession->get()->Run(rCropFeed,
-                     {"crop/output:0"},
-                     {},
-                     &rCropOutputs);
+    faceSession->get()->Run(rCropFeed,
+                            {"crop/output:0"},
+                            {},
+                            &rCropOutputs);
     
     if (!rCropStatus.ok()) {
         LOG(ERROR) << "Running crop failed: " << rCropStatus;
@@ -441,10 +478,10 @@ Status FaceAlign::RNet(Tensor imageTensor, Tensor pnetTensor, Tensor* rnetTensor
     std::vector<Tensor> rNetOutputs;
     
     Status rNetStatus =
-        faceSession->get()->Run(rNetFeed,
-                         {"rnet/conv5-2/conv5-2:0", "rnet/prob1:0"},
-                         {},
-                         &rNetOutputs);
+    faceSession->get()->Run(rNetFeed,
+                            {"rnet/conv5-2/conv5-2:0", "rnet/prob1:0"},
+                            {},
+                            &rNetOutputs);
     
     if (!rNetStatus.ok()) {
         LOG(ERROR) << "Running model failed: " << rNetStatus;
@@ -467,10 +504,10 @@ Status FaceAlign::RNet(Tensor imageTensor, Tensor pnetTensor, Tensor* rnetTensor
     std::vector<Tensor> rNetPostOutputs;
     
     Status postStatus =
-        faceSession->get()->Run(rNetPostFeed,
-                     {"rnet_post/output:0"},
-                     {},
-                     &rNetPostOutputs);
+    faceSession->get()->Run(rNetPostFeed,
+                            {"rnet_post/output:0"},
+                            {},
+                            &rNetPostOutputs);
     
     if (!postStatus.ok()) {
         LOG(ERROR) << "Running model failed: " << postStatus;
@@ -491,10 +528,10 @@ Status FaceAlign::RNet(Tensor imageTensor, Tensor pnetTensor, Tensor* rnetTensor
     };
     
     Status regressionStatus =
-        faceSession->get()->Run(rRegressionFeed,
-                     {"regression/output_stack:0"},
-                     {},
-                     &rRegressionOutputs);
+    faceSession->get()->Run(rRegressionFeed,
+                            {"regression/output_stack:0"},
+                            {},
+                            &rRegressionOutputs);
     
     FILE_LOG(logDEBUG) << "stage 2 regression" << rRegressionOutputs[0].DebugString();
     
@@ -511,10 +548,10 @@ Status FaceAlign::RNet(Tensor imageTensor, Tensor pnetTensor, Tensor* rnetTensor
     };
     
     Status nmsStatus =
-        faceSession->get()->Run(r_nmsFeed,
-                     {"nms/output:0"},
-                     {},
-                     &rNmsOutputs);
+    faceSession->get()->Run(r_nmsFeed,
+                            {"nms/output:0"},
+                            {},
+                            &rNmsOutputs);
     
     auto count = rNmsOutputs[0].shape().dim_size(0);
     
@@ -531,10 +568,10 @@ Status FaceAlign::RNet(Tensor imageTensor, Tensor pnetTensor, Tensor* rnetTensor
         };
         
         Status gatherStatus =
-            faceSession->get()->Run(gatherFeed,
-                         {"gather/output:0"},
-                         {},
-                         &rGatherOutputs);
+        faceSession->get()->Run(gatherFeed,
+                                {"gather/output:0"},
+                                {},
+                                &rGatherOutputs);
         
         if (!gatherStatus.ok()) {
             LOG(ERROR) << "Running pick model failed: " << gatherStatus;
@@ -556,13 +593,13 @@ Status FaceAlign::RNet(Tensor imageTensor, Tensor pnetTensor, Tensor* rnetTensor
         
         FILE_LOG(logDEBUG) << "about to run normal";
         Status normalStatus =
-            faceSession->get()->Run(normalizeFeed,
+        faceSession->get()->Run(normalizeFeed,
                                 {"normalize/output:0"},
                                 {},
                                 &rNormalOutputs);
         
         FILE_LOG(logDEBUG) << "stage 2 normalized " << rNormalOutputs[0].DebugString();
-
+        
         Tensor oCropNum(DT_INT32, TensorShape({1}));
         oCropNum.scalar<int>()() = rNormalOutputs[0].shape().dim_size(0);
         
@@ -576,7 +613,7 @@ Status FaceAlign::RNet(Tensor imageTensor, Tensor pnetTensor, Tensor* rnetTensor
         };
         
         Status oCropStatus =
-            faceSession->get()->Run(oCropFeed,
+        faceSession->get()->Run(oCropFeed,
                                 {"crop/output:0"},
                                 {},
                                 &oCropOutputs);
@@ -597,11 +634,10 @@ Status FaceAlign::RNet(Tensor imageTensor, Tensor pnetTensor, Tensor* rnetTensor
             {"onet/input:0", oCropOutputs[0]}
         };
         
-        Status oNetStatus =
-            faceSession->get()->Run(oNetFeed,
-                                {"onet/conv6-2/conv6-2", "onet/prob1:0"},
-                                {},
-                                &oNetOutputs);
+        Status oNetStatus = faceSession->get()->Run(oNetFeed,
+                                                    {"onet/conv6-2/conv6-2", "onet/prob1:0", "onet/conv6-3/conv6-3:0"},
+                                                    {},
+                                                    &oNetOutputs);
         
         if (!oNetStatus.ok()) {
             LOG(ERROR) << "Running model failed: " << oNetStatus;
@@ -619,12 +655,13 @@ Status FaceAlign::RNet(Tensor imageTensor, Tensor pnetTensor, Tensor* rnetTensor
         std::vector<std::pair<string, tensorflow::Tensor>> oNetPostFeed = {
             {"onet_post/scores:0", oNetOutputs[1]},
             {"onet_post/regression:0", oNetOutputs[0]},
+            {"onet_post/alignments:0", oNetOutputs[2]},
             {"onet_post/gather:0", rGatherOutputs[0]}
         };
         
         Status onetPostStatus =
-            faceSession->get()->Run(oNetPostFeed,
-                                {"onet_post/output:0"},
+        faceSession->get()->Run(oNetPostFeed,
+                                {"onet_post/output:0", "onet_post/alignment_output:0"},
                                 {},
                                 &oNetPostOutputs);
         
@@ -637,7 +674,8 @@ Status FaceAlign::RNet(Tensor imageTensor, Tensor pnetTensor, Tensor* rnetTensor
         }
         
         FILE_LOG(logDEBUG) << "Got onet post" << oNetPostOutputs[0].DebugString();
-
+        FILE_LOG(logDEBUG) << "Got onet post alignments" << oNetPostOutputs[1].DebugString();
+        
         FILE_LOG(logDEBUG) << "stage 3 regression session about to run:";
         
         std::vector<Tensor> oRegressionOutputs;
@@ -647,7 +685,7 @@ Status FaceAlign::RNet(Tensor imageTensor, Tensor pnetTensor, Tensor* rnetTensor
         };
         
         Status o_regressionStatus =
-            faceSession->get()->Run(o_regressionFeed,
+        faceSession->get()->Run(o_regressionFeed,
                                 {"regression/output_rect:0"},
                                 {},
                                 &oRegressionOutputs);
@@ -667,7 +705,7 @@ Status FaceAlign::RNet(Tensor imageTensor, Tensor pnetTensor, Tensor* rnetTensor
         };
         
         Status nmsStatus =
-            faceSession->get()->Run(oNmsFeed,
+        faceSession->get()->Run(oNmsFeed,
                                 {"nms/output:0"},
                                 {},
                                 &oNmsOutputs);
@@ -686,7 +724,7 @@ Status FaceAlign::RNet(Tensor imageTensor, Tensor pnetTensor, Tensor* rnetTensor
             };
             
             Status oGatherStatus =
-                faceSession->get()->Run(o_gatherFeed,
+            faceSession->get()->Run(o_gatherFeed,
                                     {"gather/output:0"},
                                     {},
                                     &oGatherOutputs);
@@ -699,16 +737,38 @@ Status FaceAlign::RNet(Tensor imageTensor, Tensor pnetTensor, Tensor* rnetTensor
                 FILE_LOG(logDEBUG) << "Got o_gather";
             }
             
+            std::vector<Tensor> oAlignOutputs;
+            
+            std::vector<std::pair<string, tensorflow::Tensor>> o_alignFeed = {
+                {"gather/indices:0", oNmsOutputs[0]},
+                {"gather/values:0", oNetPostOutputs[1]}
+            };
+            
+            Status oAlignStatus =
+            faceSession->get()->Run(o_alignFeed,
+                                    {"gather/output:0"},
+                                    {},
+                                    &oAlignOutputs);
+            
+            if (!oAlignStatus.ok()) {
+                LOG(ERROR) << "Running pick model failed: " << oAlignStatus;
+                return oAlignStatus;
+            }
+            else {
+                FILE_LOG(logDEBUG) << "Got o_align";
+            }
+            
             FILE_LOG(logDEBUG) << "stage 3 gather" << oGatherOutputs[0].DebugString();
             
-            *rnetTensor = oGatherOutputs[0];
+            rnetTensors->push_back(oGatherOutputs[0]);
+            rnetTensors->push_back(oAlignOutputs[0]);
         }
         else {
             LOG(INFO) << "no 3 gather returning r gather";
             // these might still be useful but we should adjust the scores to reflect the failure
-            *rnetTensor = rGatherOutputs[0];
+            rnetTensors->push_back(rGatherOutputs[0]);
         }
-
+        
     }
     return Status::OK();
 }
