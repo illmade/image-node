@@ -41,7 +41,7 @@ extern "C" {
                                     std::vector<tensorflow::Tensor>* rnetTensors,
                                     std::unique_ptr<tensorflow::Session>* faceSession);
             
-            void CreateBoxes(tensorflow::Tensor imageTensor, std::vector<tensorflow::Tensor>* locationTensors, std::string* json);
+            int CreateBoxes(tensorflow::Tensor imageTensor, std::vector<tensorflow::Tensor>* locationTensors, std::string* json);
             
         };
     }

@@ -103,7 +103,7 @@ namespace ml {
     void init(Local<Object> exports) {
 
         std::clog << "initializing addon";
-        multiClassify.reset(new MultiClassify("/Users/tim/projects/tensorflow/tensorflow/cc/multiclassify/", "INFO"));
+        multiClassify.reset(new MultiClassify("/Users/tim/projects/tensorflow/tensorflow/cc/multiclassify/", "DEBUG1"));
 
         NODE_SET_METHOD(exports, "classify", Name);
         NODE_SET_METHOD(exports, "box", Box);

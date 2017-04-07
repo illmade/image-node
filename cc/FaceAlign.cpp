@@ -65,9 +65,18 @@ int FaceAlign::ReadAndRun(std::vector<Tensor>* imageTensors, std::string* json,
     std::vector<Tensor> rNetOutput;
     
     PNet((*imageTensors)[0], &pNetOutput, faceSession);
-    RNet((*imageTensors)[0], pNetOutput, &rNetOutput, faceSession);
     
-    FILE_LOG(logDEBUG) << "creating ouput " << rNetOutput[0].DebugString();
+    int pnetOutput = pNetOutput.shape().dim_size(0);
+    
+    //if pnet does not produce output skip RNet
+    if (pnetOutput > 0){
+        RNet((*imageTensors)[0], pNetOutput, &rNetOutput, faceSession);
+        FILE_LOG(logDEBUG) << "creating ouput " << rNetOutput[0].DebugString();
+    }
+    else {
+        rNetOutput.clear();
+    }
+    
     CreateBoxes((*imageTensors)[0], &rNetOutput, json);
     
     timestamp_t t1 = timer::get_timestamp();
@@ -80,25 +89,32 @@ int FaceAlign::ReadAndRun(std::vector<Tensor>* imageTensors, std::string* json,
 //
 // Given the image tensor and the identified locations create the json to send back
 //
-void FaceAlign::CreateBoxes(Tensor imageTensor, std::vector<Tensor>* locationTensors, std::string* json){
+int FaceAlign::CreateBoxes(Tensor imageTensor, std::vector<Tensor>* locationTensors, std::string* json){
     
     float scoreMutliplier = 1.;
-    float alignments = sizeof(*locationTensors);
+    float alignments = locationTensors->size();
     
+    FILE_LOG(logDEBUG) << "creating boxes " << alignments;
+    
+    float width = imageTensor.shape().dim_size(2);
+    float height = imageTensor.shape().dim_size(1);
+    
+    std::ostringstream buffer;
+    buffer << "{'size': [" << width << ", " << height << "], 'locations': [";
+    
+    if (alignments==0){
+        buffer << "]}";
+        *json = buffer.str();
+        return -1;
+    }
     if (alignments<2){
         scoreMutliplier = 0.5;
     }
     
     int number = (*locationTensors)[0].shape().dim_size(0);
     
-    float width = imageTensor.shape().dim_size(2);
-    float height = imageTensor.shape().dim_size(1);
-    
     FILE_LOG(logDEBUG) << "w " << width << " h " << height;
     FILE_LOG(logDEBUG) << "Number of boxes: " << number << " " << (*locationTensors)[0].DebugString();
-    
-    std::ostringstream buffer;
-    buffer << "{'size': [" << width << ", " << height << "], 'locations': [";
     
     if (number > 0){
         auto boxTensor = (*locationTensors)[0].flat<float>();
@@ -170,6 +186,7 @@ void FaceAlign::CreateBoxes(Tensor imageTensor, std::vector<Tensor>* locationTen
     }
     
     *json = buffer.str();
+    return 1;
 }
 
 //
@@ -277,12 +294,11 @@ Status FaceAlign::PNet(Tensor imageTensorIn, Tensor* pnetTensor,
             {"heatmap/scale:0", scaleT}
         };
         
-        Status heatmapStatus =
-        faceSession->get()->Run( heatmapFeed,
-                                {"heatmap/bounds_output:0"},
-                                {},
-                                &heatmapOutputs
-                                );
+        Status heatmapStatus = faceSession->get()->Run( heatmapFeed,
+                                                       {"heatmap/bounds_output:0"},
+                                                       {},
+                                                       &heatmapOutputs
+                                                       );
         
         if (!heatmapStatus.ok()) {
             LOG(ERROR) << "Running heatmap model failed: " << heatmapStatus;
@@ -301,11 +317,10 @@ Status FaceAlign::PNet(Tensor imageTensorIn, Tensor* pnetTensor,
             {"nms/threshold:0", nmsThresholdT}
         };
         
-        Status nmsStatus =
-        faceSession->get()->Run(nmsFeed,
-                                {"nms/output:0"},
-                                {},
-                                &nmsOutputs);
+        Status nmsStatus = faceSession->get()->Run(nmsFeed,
+                                                   {"nms/output:0"},
+                                                   {},
+                                                   &nmsOutputs);
         
         FILE_LOG(logDEBUG) << "nms counter" << nmsOutputs[0].DebugString();
         
@@ -315,7 +330,7 @@ Status FaceAlign::PNet(Tensor imageTensorIn, Tensor* pnetTensor,
         
         if (count>0){
             
-            FILE_LOG(logDEBUG) << "nms indices" << nmsOutputs[0].DebugString();
+            FILE_LOG(logDEBUG) << "nms count " << count << " indices" << nmsOutputs[0].DebugString();
             
             std::vector<Tensor> pickOutputs;
             
@@ -349,9 +364,14 @@ Status FaceAlign::PNet(Tensor imageTensorIn, Tensor* pnetTensor,
     tensor::Concat(allOutputs, &concated);
     FILE_LOG(logDEBUG) << "concat " << concated.DebugString();
     
-    if (sizeof(allOutputs) > 0){
+    int remainingBoxes = concated.shape().dim_size(0);
+    
+    if (remainingBoxes == 0){
+        FILE_LOG(logDEBUG) << "stage 1 produced no proposals: " << remainingBoxes;
+    }
+    else {
         
-        FILE_LOG(logDEBUG) << "nms stage 1 session about to run:";
+        FILE_LOG(logDEBUG) << "nms stage 1 session about to run: " << remainingBoxes;
         
         std::vector<std::pair<string, tensorflow::Tensor>> nmsFeed = {
             {"nms/bounds:0", concated},
@@ -566,10 +586,14 @@ Status FaceAlign::RNet(Tensor imageTensor, Tensor pnetTensor, std::vector<Tensor
     
     auto count = rNmsOutputs[0].shape().dim_size(0);
     
-    FILE_LOG(logDEBUG) << "nms count" << count;
+    FILE_LOG(logDEBUG) << "stage 2 nms count" << count;
     
-    if (count>0){
-        FILE_LOG(logDEBUG) << "nms indices" << rNmsOutputs[0].DebugString();
+    if (count==0){
+        FILE_LOG(logINFO) << "stage 2 found no faces returning last outputs";
+        rnetTensors->push_back(rRegressionOutputs[0]);
+    }
+    else {
+        FILE_LOG(logDEBUG) << "tage 2 nms indices" << rNmsOutputs[0].DebugString();
         
         std::vector<Tensor> rGatherOutputs;
         

@@ -7,8 +7,8 @@
 6 silly lifecycle classify@0.0.0~prestart: no script for prestart, continuing
 7 info lifecycle classify@0.0.0~start: classify@0.0.0
 8 verbose lifecycle classify@0.0.0~start: unsafe-perm in lifecycle true
-9 verbose lifecycle classify@0.0.0~start: PATH: /usr/local/lib/node_modules/npm/bin/node-gyp-bin:/Users/tim/WebstormProjects/classify/node_modules/.bin:/Users/tim/Downloads/google-cloud-sdk/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/git/bin
-10 verbose lifecycle classify@0.0.0~start: CWD: /Users/tim/WebstormProjects/classify
+9 verbose lifecycle classify@0.0.0~start: PATH: /usr/local/lib/node_modules/npm/bin/node-gyp-bin:/Users/tim/projects/image-node/node/node_modules/.bin:/Users/tim/Downloads/google-cloud-sdk/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/git/bin
+10 verbose lifecycle classify@0.0.0~start: CWD: /Users/tim/projects/image-node/node
 11 silly lifecycle classify@0.0.0~start: Args: [ '-c', 'node ./bin/www' ]
 12 silly lifecycle classify@0.0.0~start: Returned: code: 1  signal: null
 13 info lifecycle classify@0.0.0~start: Failed to exec start script
@@ -23,8 +23,8 @@
 14 verbose stack     at maybeClose (internal/child_process.js:885:16)
 14 verbose stack     at Process.ChildProcess._handle.onexit (internal/child_process.js:226:5)
 15 verbose pkgid classify@0.0.0
-16 verbose cwd /Users/tim/WebstormProjects/classify
-17 error Darwin 16.4.0
+16 verbose cwd /Users/tim/projects/image-node/node
+17 error Darwin 16.5.0
 18 error argv "/usr/local/bin/node" "/usr/local/bin/npm" "start"
 19 error node v7.4.0
 20 error npm  v4.0.5
