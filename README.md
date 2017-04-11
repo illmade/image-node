@@ -6,7 +6,7 @@ It's still toylike but it's more promising than I expected.
 The idea is to allow a simple microservice approach - import graphs into a c++ tensorflow environment, build these as sharedlibs and connect to them using nodejs addons. 
 
 At present it provides access to 3 ml applications:
-- The tensorflow bundled inception model
+- The tensorflow inception model: updated to v4 (it is also possible to use other versions)
 - The tensorflow bundled multibox model
 - A tensorflowification of a Joint Face Detection and Alignment using Multi-task Cascaded Convolutional Networks implementation
 
@@ -33,7 +33,8 @@ There's a detailed run through of getting some of the parts working [here](http:
 
 A simple way to get the python notebook running is to use one of tensorflow docker images with the py directory contents.
 
-The inception model can be downloaded from [here](https://storage.googleapis.com/download.tensorflow.org/models/inception_dec_2015.zip)
+The inception model can be downloaded from [here](http://download.tensorflow.org/models/inception_v4_2016_09_09.tar.gz) and converted to
+the pb format using the py notebook in [py](https://github.com/illmade/image-node/tree/master/py/inception_v4.ipynb)
 
 And the multibox model from [here](https://storage.googleapis.com/download.tensorflow.org/models/mobile_multibox_v1a.zip)
 

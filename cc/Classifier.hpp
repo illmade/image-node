@@ -22,14 +22,16 @@ extern "C" {
         class Classifier {
             public:
             
-            Classifier(std::string path);
+            Classifier(std::string path, std::string input, std::string output);
             ~Classifier();
 
             int ReadAndRun(std::vector<tensorflow::Tensor>* imageTensors, std::string* json, std::unique_ptr<tensorflow::Session>* session);
             
             private:
             
-            std::string rootPath;
+            std::string labelsFile;
+            std::string graphInput; // inception_v4 "input:0"
+            std::string graphOutput; // inception_v4 "InceptionV4/Logits/Predictions"
             
             std::vector<std::string> labels;
             size_t foundLabelCount;

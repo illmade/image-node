@@ -1,13 +1,12 @@
 //
 //  MultiClassify.cpp
-//
+//  
 //
 //  Created by tim on 23/03/2017.
 //
 //
 #include <fstream>
 #include <memory>
-
 #include "MultiClassify.hpp"
 #include "GraphLoader.hpp"
 #include "Classifier.hpp"
@@ -73,7 +72,7 @@ MultiClassify::MultiClassify(std::string root, std::string logLevel){
     
     //graphLoader->InitializeSessionGraph(&boxSession, &boxGraphDef);
     
-    std::string classifyGraphPath = "data/tensorflow_inception_graph.pb";
+    std::string classifyGraphPath = "data/inception_v4.pb";
     auto inceptionLoadStatus = graphLoader->LoadGraphDef(&classifyGraphDef, classifyGraphPath);
     
     if (!inceptionLoadStatus.ok()) {
@@ -115,7 +114,11 @@ MultiClassify::MultiClassify(std::string root, std::string logLevel){
         FILE_LOG(logDEBUG) << "Started face session";
     }
     
-    classifier.reset(new Classifier(root));
+    labelsFile = root + "data/inception_labels.txt";
+    
+    //inception v3 "mul" "softmax"
+    //inception v4 "input:0" "InceptionV4/Logits/Predictions"
+    classifier.reset(new Classifier(labelsFile, "input:0", "InceptionV4/Logits/Predictions"));
     multibox.reset(new Multibox(root));
     faceAlign.reset(new FaceAlign());
     
@@ -150,7 +153,7 @@ void MultiClassify::ClassifyFile(std::string fileName){
     Classify(asString, 1, json);
     
     Align(asString, 1, json);
-    
+
     timestamp_t t1 = timer::get_timestamp();
     
     double classifyTime = (t1 - t0);
@@ -187,7 +190,7 @@ int MultiClassify::Align(std::string byteString, int encoding, std::string* json
         auto scaleStatus = session.Run({imageOutput}, &resizeOutputs);
         
         imageTensors[0] = resizeOutputs[0];
-        
+
     }
     
     return faceAlign -> ReadAndRun(&imageTensors, json, &faceSession);
@@ -233,7 +236,7 @@ int MultiClassify::Box(std::string byteString, int encoding, std::string* json){
     auto scaleStatus = session.Run({imageOutput}, &resizeOutputs);
     
     imageTensors.push_back(resizeOutputs[0]);
-    
+
     return multibox -> ReadAndRun(&imageTensors, json, &boxSession);
 }
 

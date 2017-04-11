@@ -21,8 +21,10 @@ using namespace tensorflow::ops;
 //
 // Basic initialization of the classifier
 //
-Classifier::Classifier(std::string path){
-    rootPath = path;
+Classifier::Classifier(std::string labels, std::string input, std::string output){
+    labelsFile = labels;
+    graphInput = input;
+    graphOutput = output;
     
     InitializeLabels();
     FILE_LOG(logDEBUG) << "initialized Classifier";
@@ -31,9 +33,7 @@ Classifier::Classifier(std::string path){
 //We only need to get the labels once
 Status Classifier::InitializeLabels(){
     
-    std::string labelsFileName = rootPath + "data/imagenet_comp_graph_label_strings.txt";
-    
-    auto file = std::ifstream(labelsFileName);
+    auto file = std::ifstream(labelsFile);
     if (!file) {
         FILE_LOG(logDEBUG) << "no file " + labelsFileName;
         return tensorflow::errors::NotFound("Labels file ", labelsFileName,
@@ -70,8 +70,8 @@ int Classifier::ReadAndRun(std::vector<Tensor>* imageTensors, std::string* json,
     FILE_LOG(logDEBUG) << "main session loc: " << &session;
     
     Status runStatus = session->get()->Run(
-                                        {{"Mul", (*imageTensors)[0]}},
-                                        {"softmax"},
+                                        {{graphInput, (*imageTensors)[0]}},
+                                        {graphOutput},
                                         {},
                                         &classifyOutputs);
     
@@ -118,7 +118,7 @@ Status Classifier::PrintTopLabels(const std::vector<Tensor>& outputs, const int 
     tensorflow::TTypes<float>::Flat scores_flat = scores.flat<float>();
     tensorflow::TTypes<int32>::Flat indices_flat = indices.flat<int32>();
     
-    FILE_LOG(logDEBUG) << "Top scores: ";
+    FILE_LOG(logDEBUG) << "Top scores: " << indices.DebugString();
     
     std::ostringstream buffer;
     buffer << "{'scores': [";
@@ -128,7 +128,7 @@ Status Classifier::PrintTopLabels(const std::vector<Tensor>& outputs, const int 
         const float score = scores_flat(pos);
         
         buffer << "{'label': '"
-        << labels[label_index]
+        << labels[label_index-1]
         << "', 'labelIndex': '"
         << label_index
         << "', 'score': '"
