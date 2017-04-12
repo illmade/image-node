@@ -4,3 +4,4 @@ cc/data/tensorflow_inception_graph.pb
 .project
 .settings
 node/build/Makefile
+*.pyc
