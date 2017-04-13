@@ -10,6 +10,8 @@ At present it provides access to 3 ml applications:
 - The tensorflow bundled multibox model
 - A tensorflowification of a Joint Face Detection and Alignment using Multi-task Cascaded Convolutional Networks implementation
 
+(A fourth, a single shot dectector is just about ready for inclusion: a jupyter notebook is almost complete for exporting a pb graph)
+
 The 3 give a good spread of input-response situations.
 The smallest model - face detection and alignment needs more work as it is not a 'pure' network, cascading from one network to another:
 I've provided a python notebook that leads through the tensorflow graph that we freeze and export for use in c++.
