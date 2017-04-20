@@ -72,7 +72,6 @@ namespace ml {
         args.GetReturnValue().Set(String::NewFromUtf8(isolate, json.get() -> c_str()));
     }
     
-
     void Name(const FunctionCallbackInfo<Value>& args) {
         std::unique_ptr<std::string> json(new std::string(""));
         Isolate* isolate = args.GetIsolate();
@@ -99,6 +98,33 @@ namespace ml {
 
         args.GetReturnValue().Set(String::NewFromUtf8(isolate, json.get() -> c_str()));
     }
+    
+    void Detect(const FunctionCallbackInfo<Value>& args) {
+        std::unique_ptr<std::string> json(new std::string(""));
+        Isolate* isolate = args.GetIsolate();
+        
+        assert(args[0] -> IsUint8Array());
+        assert(args[1] -> IsNumber());
+        
+        int imageType = args[1]->NumberValue();
+        
+        auto imageArray = args[0].As<Uint8Array>();
+        //We want the length to create the string
+        auto length = imageArray->Length();
+        
+        Nan::TypedArrayContents<uint8_t> dataPtr(imageArray);
+        
+        std::string charString = std::string(*dataPtr, *dataPtr + length);
+        
+        //send it to tensorflow!
+        auto response = multiClassify -> Detect(charString, imageType, json.get());
+        
+        if ( response < 0 ){
+            std::cerr << "ssd could not process image" << "\n";
+        }
+        
+        args.GetReturnValue().Set(String::NewFromUtf8(isolate, json.get() -> c_str()));
+    }
 
     void init(Local<Object> exports) {
 
@@ -108,6 +134,7 @@ namespace ml {
         NODE_SET_METHOD(exports, "classify", Name);
         NODE_SET_METHOD(exports, "box", Box);
         NODE_SET_METHOD(exports, "align", Align);
+        NODE_SET_METHOD(exports, "detect", Detect);
     }
 
     NODE_MODULE(addons, init)

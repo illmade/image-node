@@ -264,8 +264,7 @@ Status FaceAlign::PNet(Tensor imageTensorIn, Tensor* pnetTensor,
             {"pnet/input:0", scaleOutputs[0]}
         };
         
-        Status pNetStatus =
-        faceSession->get()->Run(pnetFeed,
+        Status pNetStatus = faceSession->get()->Run(pnetFeed,
                                 {"pnet/conv4-2/BiasAdd:0", "pnet/prob1:0"},
                                 {},
                                 &pNetOutputs);
@@ -295,10 +294,10 @@ Status FaceAlign::PNet(Tensor imageTensorIn, Tensor* pnetTensor,
         };
         
         Status heatmapStatus = faceSession->get()->Run( heatmapFeed,
-                                                       {"heatmap/bounds_output:0"},
-                                                       {},
-                                                       &heatmapOutputs
-                                                       );
+                                    {"heatmap/bounds_output:0"},
+                                    {},
+                                    &heatmapOutputs
+                                    );
         
         if (!heatmapStatus.ok()) {
             LOG(ERROR) << "Running heatmap model failed: " << heatmapStatus;
@@ -318,9 +317,9 @@ Status FaceAlign::PNet(Tensor imageTensorIn, Tensor* pnetTensor,
         };
         
         Status nmsStatus = faceSession->get()->Run(nmsFeed,
-                                                   {"nms/output:0"},
-                                                   {},
-                                                   &nmsOutputs);
+                                {"nms/output:0"},
+                                {},
+                                &nmsOutputs);
         
         FILE_LOG(logDEBUG) << "nms counter" << nmsOutputs[0].DebugString();
         

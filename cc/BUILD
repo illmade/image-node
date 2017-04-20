@@ -5,7 +5,7 @@ licenses(["notice"])  # Apache 2.0
 exports_files(["LICENSE"])
 
 cc_binary(
-    name = "libmulticlassifier.so",
+    name = "libmulticlassify.so",
     linkshared = 1,
     srcs = ["GraphLoader.cpp", "GraphLoader.hpp",
             "Multibox.cpp", "Multibox.hpp",
@@ -13,6 +13,7 @@ cc_binary(
             "Classifier.cpp", "Classifier.hpp",
             "MultiClassify.cpp", "MultiClassify.hpp",
             "ImageGraph.cpp", "ImageGraph.hpp",
+            "SingleShotDetector.cpp", "SingleShotDetector.hpp",
             "VerifyApp.cpp",
             "timer.cpp", "timer.hpp", "log.hpp"],
     deps = [

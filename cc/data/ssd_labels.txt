@@ -1,0 +1,21 @@
+0
+Aeroplane
+Bicycle
+Bird
+Boat
+Bottle
+Bus
+Car
+Cat
+Chair
+Cow
+Table
+Dog
+Horse
+Motorbike
+Person
+Potted Plant
+Sheep
+Sofa
+Train
+Monitor

@@ -54,19 +54,21 @@ exports.uploadImage = function(req, res, next){
         var boxes = classifier.box(img, fileType);
         var classifications = classifier.classify(img, fileType);
         var faces = classifier.align(img, fileType);
+        var detections = classifier.detect(img, fileType);
         hrend = process.hrtime(hrstart);
         var timeTaken = hrend[1]/1000000;
         var secs = hrend[0] + "" + timeTaken;
         console.timeEnd("classify");
         console.log(secs);
 
-        console.log('Returned value: ' + boxes);
-        console.log('Returned value: ' + classifications);
-        console.log('Returned value: ' + faces);
+        console.log('Boxes value: ' + boxes);
+        console.log('Classifications value: ' + classifications);
+        console.log('Faces value: ' + faces);
+        console.log('Detections value: ' + detections);
 
         res.render('classify', { title: 'Classify', imageData: imgString,
             imageJson: boxes, classificationJson: classifications, 
-            faceJson: faces, classifyTime: secs}, function(err, html) {
+            faceJson: faces, detectJson: detections, classifyTime: secs}, function(err, html) {
             res.send(html);
         });
     });

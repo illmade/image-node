@@ -35,11 +35,11 @@ Status Classifier::InitializeLabels(){
     
     auto file = std::ifstream(labelsFile);
     if (!file) {
-        FILE_LOG(logDEBUG) << "no file " + labelsFileName;
-        return tensorflow::errors::NotFound("Labels file ", labelsFileName,
+        FILE_LOG(logDEBUG) << "no file " + labelsFile;
+        return tensorflow::errors::NotFound("Labels file ", labelsFile,
                                             " not found.");
     }
-    FILE_LOG(logDEBUG) << "found file " + labelsFileName;
+    FILE_LOG(logDEBUG) << "found file " + labelsFile;
     
     labels.clear();
     string line;

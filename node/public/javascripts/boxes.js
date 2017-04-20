@@ -28,6 +28,8 @@ function drawBox(containerId, canvasId, json, color, scoreMultiplier, canvasImag
     container.style.height = "" + height + "px";
     
     context.scale(scaling, scaling);
+    context.font = "30px Arial";
+    context.fillStyle = "rgba(255,255,0,0.5)";
     
     context.lineWidth = 3 / scaling;
 
@@ -52,6 +54,12 @@ function drawBox(containerId, canvasId, json, color, scoreMultiplier, canvasImag
 
         context.strokeStyle = "rgba(" + color + "," + alpha + ")";
         context.stroke();
+        
+        var classification = json.locations[i].classification;
+        
+        if (classification){
+        	context.fillText(classification,x,y+20);
+        }
     }
     
     context.restore();
@@ -98,20 +106,30 @@ function drawFace(containerId, canvasId, json, color, scoreMultiplier, canvasIma
         var w = box[2] - x;
         var h = box[3] - y;
         
-        var adjust = json.alignments[i].adjust;
-        var ax = adjust[0];
-        var ay = adjust[1];
+        var xscale = 0;
+        var yscale = 0;
         
-        var aw = adjust[2] - ax;
-        var ah = adjust[3] - ay;
+        var xshift = 0;
+        var yshift = 0;
         
-        var xscale = w / aw;
-        var yscale = h / ah;
+        var points = [];
         
-        var xshift = x - ax;
-        var yshift = y - ay;
-        
-        var points = json.alignments[i].alignment;
+        if(json.alignments){
+	        var adjust = json.alignments[i].adjust;
+	        var ax = adjust[0];
+	        var ay = adjust[1];
+	        
+	        var aw = adjust[2] - ax;
+	        var ah = adjust[3] - ay;
+	        
+	        xscale = w / aw;
+	        yscale = h / ah;
+	        
+	        xshift = x - ax;
+	        yshift = y - ay;
+	        
+	        points = json.alignments[i].alignment;
+        }
         
         context.beginPath();
         context.rect(x, y, w, h);

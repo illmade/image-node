@@ -26,7 +26,7 @@ int main() {
     
     LOG(INFO) << "initializing";
     std::string root = "/Users/tim/projects/tensorflow/tensorflow/cc/multiclassify/";
-    std::unique_ptr<MultiClassify> multiClassify(new MultiClassify(root, "INFO"));
+    std::unique_ptr<MultiClassify> multiClassify(new MultiClassify(root, "DEBUG1"));
     LOG(INFO) << "ready to classify";
     string fileName = "/Users/tim/projects/tensorflow/tensorflow/cc/multiclassify/data/street_smaller.jpg";
     multiClassify->ClassifyFile(fileName);

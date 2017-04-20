@@ -5,14 +5,13 @@ This started out as a toy project to serve one of the tensorflow c++ examples th
 It's still toylike but it's more promising than I expected.
 The idea is to allow a simple microservice approach - import graphs into a c++ tensorflow environment, build these as sharedlibs and connect to them using nodejs addons. 
 
-At present it provides access to 3 ml applications:
+At present it provides access to 4 ml applications:
 - The tensorflow inception model: updated to v4 (it is also possible to use other versions)
 - The tensorflow bundled multibox model
 - A tensorflowification of a Joint Face Detection and Alignment using Multi-task Cascaded Convolutional Networks implementation
+- A tensorflowification of a Single Shot Detector
 
-(A fourth, a single shot dectector is just about ready for inclusion: a jupyter notebook is almost complete for exporting a pb graph)
-
-The 3 give a good spread of input-response situations.
+The 4 give a good spread of input-response situations.
 The smallest model - face detection and alignment needs more work as it is not a 'pure' network, cascading from one network to another:
 I've provided a python notebook that leads through the tensorflow graph that we freeze and export for use in c++.
 
@@ -24,6 +23,7 @@ So we have
 - face position and alignment
 - person detection
 - classification
+- object localization
 
 Nice when it gets it right!
 
@@ -44,6 +44,8 @@ Place both of them in the cc/data directory.
 Edit the path to your data in addons/classify.cc, where you can also set the log level of the output
 
 ln106: multiClassify.reset(new MultiClassify("..path to directory containing data/ ", "INFO"));
+
+You should be able to create the pb models using the python notebooks but they are also available [here](https://drive.google.com/drive/folders/0B9-SnYo1_fxZcVpQa2RuUDBLS0E)
 
 Change INFO to DEBUG1 for a debug output.
 

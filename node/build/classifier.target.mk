@@ -156,7 +156,7 @@ LIBTOOLFLAGS_Release := \
 	-Wl,-search_paths_first
 
 LIBS := \
-	~/projects/tensorflow/bazel-bin/tensorflow/cc/multiclassify/libmulticlassifier.so
+	~/projects/tensorflow/bazel-bin/tensorflow/cc/multiclassify/libmulticlassify.so
 
 $(builddir)/classifier.node: GYP_LDFLAGS := $(LDFLAGS_$(BUILDTYPE))
 $(builddir)/classifier.node: LIBS := $(LIBS)

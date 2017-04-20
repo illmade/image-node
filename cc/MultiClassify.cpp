@@ -7,6 +7,8 @@
 //
 #include <fstream>
 #include <memory>
+
+#include "SingleShotDetector.hpp"
 #include "MultiClassify.hpp"
 #include "GraphLoader.hpp"
 #include "Classifier.hpp"
@@ -41,12 +43,37 @@ MultiClassify::MultiClassify(std::string root, std::string logLevel){
     inceptionSize = 299;
     multiboxSize = 224;
     
+    GraphDef ssdGraphDef;
     GraphDef boxGraphDef;
     GraphDef classifyGraphDef;
     GraphDef faceGraphDef;
     
     std::unique_ptr<GraphLoader> graphLoader;
     graphLoader.reset(new GraphLoader(root));
+    
+    //load the ssd graph
+    std::string ssdGraphPath = "data/ssd.pb";
+    
+    auto ssdLoadStatus = graphLoader->LoadGraphDef(&ssdGraphDef, ssdGraphPath);
+    
+    if (!ssdLoadStatus.ok()) {
+        LOG(ERROR) << "Loading model failed: " << ssdLoadStatus;
+        throw std::exception();
+    }
+    else {
+        FILE_LOG(logDEBUG) << "Loaded ssd model";
+    }
+    
+    auto ssdSessionStatus = graphLoader->InitializeSessionGraph(&ssdSession, &ssdGraphDef);
+    
+    if (!ssdSessionStatus.ok()) {
+        LOG(ERROR) << "Starting session failed: " << ssdSessionStatus;
+        throw std::exception();
+    }
+    else {
+        FILE_LOG(logDEBUG) << "Started ssd session";
+    }
+    //finished ssd graph loading
     
     std::string boxGraphPath = "data/multibox_model.pb";
     
@@ -114,7 +141,7 @@ MultiClassify::MultiClassify(std::string root, std::string logLevel){
         FILE_LOG(logDEBUG) << "Started face session";
     }
     
-    labelsFile = root + "data/inception_labels.txt";
+    std::string labelsFile = root + "data/inception_labels.txt";
     
     //inception v3 "mul" "softmax"
     //inception v4 "input:0" "InceptionV4/Logits/Predictions"
@@ -122,14 +149,17 @@ MultiClassify::MultiClassify(std::string root, std::string logLevel){
     multibox.reset(new Multibox(root));
     faceAlign.reset(new FaceAlign());
     
+    std::string ssdLabelsFile = root + "data/ssd_labels.txt";
+    singleShotDetector.reset(new SingleShotDetector(ssdLabelsFile, &ssdSession));
+    
     imageGraph.reset(new ImageGraph());
     
-    LOG(INFO) << "Finished init";
+    LOG(INFO) << "Finished multiclassify init";
 }
 
 void MultiClassify::ClassifyFile(std::string fileName){
     
-    FILE_LOG(logDEBUG) << "Reading image ";
+    FILE_LOG(logDEBUG) << "Reading image from file: " << fileName;
     auto root = tensorflow::Scope::NewRootScope();
     
     tensorflow::Output fileReader = tensorflow::ops::ReadFile(root.WithOpName("file_reader"),
@@ -139,20 +169,30 @@ void MultiClassify::ClassifyFile(std::string fileName){
     
     Status result = session.Run({}, {fileReader}, &outputs);
     
-    auto first = outputs[0];
+    auto imageString = outputs[0];
     
-    auto asString = first.scalar<string>()();
+    auto asString = imageString.scalar<string>()();
+    
+    LOG(INFO) << "Got imageString";
     
     std::string scores = "";
     std::string* json = &scores;
     
     timestamp_t t0 = timer::get_timestamp();
     
+    Align(asString, 1, json);
+    LOG(INFO) << "Got align: ";
+    
     Box(asString, 1, json);
+    LOG(INFO) << "Got boxes: ";
     
     Classify(asString, 1, json);
+    LOG(INFO) << "Got classify: ";
     
-    Align(asString, 1, json);
+    Detect(asString, 1, json);
+    LOG(INFO) << "Got detect: ";
+    
+    LOG(INFO) << *json;
 
     timestamp_t t1 = timer::get_timestamp();
     
@@ -164,6 +204,7 @@ int MultiClassify::Align(std::string byteString, int encoding, std::string* json
     std::vector<Tensor> imageTensors;
     auto importStatus = imageGraph->ProccessImage(byteString, encoding, &imageTensors);
     
+    LOG(INFO) << "Processed align image";
     int width = imageTensors[0].shape().dim_size(2);
     int height = imageTensors[0].shape().dim_size(1);
     
@@ -218,6 +259,31 @@ int MultiClassify::Classify(std::string byteString, int encoding, std::string* j
     return classifier -> ReadAndRun(&resizeOutputs, json, &classifySession);
 }
 
+int MultiClassify::Detect(std::string byteString, int encoding, std::string* json){
+    
+    std::vector<Tensor> imageTensors;
+    auto importStatus = imageGraph->ProccessImage(byteString, encoding, &imageTensors);
+    
+    Scope localRoot = Scope::NewRootScope();
+    
+    std::vector<Tensor> resizeOutputs;
+    
+    auto imageOutput = ResizeBilinear(localRoot,
+                                      imageTensors[0],
+                                      {inceptionSize, inceptionSize});
+    
+    FILE_LOG(logDEBUG) << "Scaling to sdd input: " << imageTensors[0].DebugString();
+    
+    ClientSession session(localRoot);
+    auto scaleStatus = session.Run({imageOutput}, &resizeOutputs);
+    
+    FILE_LOG(logDEBUG) << "resizeOutputs: " << resizeOutputs[0].DebugString();
+    
+    imageTensors.push_back(resizeOutputs[0]);
+    return singleShotDetector -> ReadAndRun(&imageTensors, json, &ssdSession);
+}
+
+
 int MultiClassify::Box(std::string byteString, int encoding, std::string* json){
     std::vector<Tensor> imageTensors;
     auto importStatus = imageGraph->ProccessImage(byteString, encoding, &imageTensors);
@@ -242,7 +308,10 @@ int MultiClassify::Box(std::string byteString, int encoding, std::string* json){
 
 MultiClassify::~MultiClassify(){
     LOG(INFO) << "destructing";
-    boxSession->Close();
-    classifySession->Close();
-    faceSession->Close();
+    auto closedBoxSession = boxSession->Close();
+    auto closedClassifySession = classifySession->Close();
+    auto closedFaceSession = faceSession->Close();
+    auto closedSsdSession = ssdSession->Close();
+    
+    FILE_LOG(logDEBUG) << "Closed sessions: " << closedBoxSession << ", " << closedClassifySession << ", " << closedFaceSession << ", " << closedSsdSession;
 }

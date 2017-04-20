@@ -22,6 +22,7 @@ extern "C" {
             int Classify(std::string byteString, int encoding, std::string* json);
             int Box(std::string byteString, int encoding, std::string* json);
             int Align(std::string byteString, int encoding, std::string* json);
+            int Detect(std::string byteString, int encoding, std::string* json);
         };
 
             }

@@ -29,11 +29,12 @@ extern "C" {
             
             private:
             
+            std::vector<std::string> labels;
+            
             std::string labelsFile;
             std::string graphInput; // inception_v4 "input:0"
             std::string graphOutput; // inception_v4 "InceptionV4/Logits/Predictions"
             
-            std::vector<std::string> labels;
             size_t foundLabelCount;
             
             tensorflow::Status InitializeLabels();
