@@ -201,6 +201,12 @@ void MultiClassify::ClassifyFile(std::string fileName){
 }
 
 int MultiClassify::Align(std::string byteString, int encoding, std::string* json){
+    
+    if ( sizeof(byteString)==0 ){
+        FILE_LOG(logWARNING) << "No data in byteString";
+        return -1;
+    }
+    
     std::vector<Tensor> imageTensors;
     auto importStatus = imageGraph->ProccessImage(byteString, encoding, &imageTensors);
     
@@ -238,6 +244,12 @@ int MultiClassify::Align(std::string byteString, int encoding, std::string* json
 }
 
 int MultiClassify::Classify(std::string byteString, int encoding, std::string* json){
+    
+    if ( sizeof(byteString)==0 ){
+        FILE_LOG(logWARNING) << "No data in byteString";
+        return -1;
+    }
+    
     std::vector<Tensor> imageTensors;
     auto importStatus = imageGraph->ProccessImage(byteString, encoding, &imageTensors);
     
@@ -261,6 +273,11 @@ int MultiClassify::Classify(std::string byteString, int encoding, std::string* j
 
 int MultiClassify::Detect(std::string byteString, int encoding, std::string* json){
     
+    if ( sizeof(byteString)==0 ){
+        FILE_LOG(logWARNING) << "No data in byteString";
+        return -1;
+    }
+
     std::vector<Tensor> imageTensors;
     auto importStatus = imageGraph->ProccessImage(byteString, encoding, &imageTensors);
     
@@ -285,6 +302,12 @@ int MultiClassify::Detect(std::string byteString, int encoding, std::string* jso
 
 
 int MultiClassify::Box(std::string byteString, int encoding, std::string* json){
+    
+    if ( sizeof(byteString)==0 ){
+        FILE_LOG(logWARNING) << "No data in byteString";
+        return -1;
+    }
+
     std::vector<Tensor> imageTensors;
     auto importStatus = imageGraph->ProccessImage(byteString, encoding, &imageTensors);
     

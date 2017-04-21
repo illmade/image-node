@@ -45,10 +45,10 @@ SingleShotDetector::SingleShotDetector(std::string path, std::unique_ptr<tensorf
         mean.vec<float>()(i) = meanValues[i];
     }
 
-    InitializeLabels();
-    InitializePriors(session);
+    auto gotLabels = InitializeLabels();
+    auto gotPriors = InitializePriors(session);
     
-    FILE_LOG(logDEBUG) << "initialized Labels";
+    FILE_LOG(logDEBUG) << "initialized Labels " << gotLabels << " ," << gotPriors;
 }
 
 SingleShotDetector::~SingleShotDetector(){
@@ -179,6 +179,10 @@ int SingleShotDetector::ReadAndRun(std::vector<tensorflow::Tensor>* imageTensors
         success = CreateBoxes((*imageTensors)[0], &pickOutputs[0], json);
 
     }
+    else {
+        //we could just give an empty json object - but keep the output standard
+        success = CreateBoxes((*imageTensors)[0], &nmsOutputs[0], json);
+    }
     
     timestamp_t t1 = timer::get_timestamp();
     double classifyTime = (t1 - t0);
@@ -279,7 +283,6 @@ Status SingleShotDetector::PostProcess(std::unique_ptr<tensorflow::Session>* ses
 
 //We only need to get the labels once
 Status SingleShotDetector::InitializePriors(std::unique_ptr<tensorflow::Session>* session){
-    timestamp_t t0 = timer::get_timestamp();
     
     xLayer = new std::vector< tensorflow::Tensor >();
     yLayer = new std::vector< tensorflow::Tensor >();
@@ -329,7 +332,7 @@ Status SingleShotDetector::InitializePriors(std::unique_ptr<tensorflow::Session>
     return Status::OK();
 }
 
-int SingleShotDetector::AddWHLevel(int level, std::vector<float> ws, std::vector<float> hs){
+void SingleShotDetector::AddWHLevel(int level, std::vector<float> ws, std::vector<float> hs){
     
     const int size = ws.size();
     
@@ -379,6 +382,8 @@ Status SingleShotDetector::AddXYLevel(int featureShape, float featureAdjust, std
     
     xLayer->push_back(xyOutputs[1]);
     yLayer->push_back(xyOutputs[0]);
+    
+    return Status::OK();
 }
 
 

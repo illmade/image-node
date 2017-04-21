@@ -53,7 +53,7 @@ extern "C" {
             
             int CreateBoxes(tensorflow::Tensor imageTensor, tensorflow::Tensor* locations, std::string* json);
             
-            int AddWHLevel(int level, std::vector<float> ws, std::vector<float> hs);
+            void AddWHLevel(int level, std::vector<float> ws, std::vector<float> hs);
             tensorflow::Status AddXYLevel(int featureShape, float featureAdjust, std::unique_ptr<tensorflow::Session>* session);
             
             tensorflow::Status InitializeLabels();
