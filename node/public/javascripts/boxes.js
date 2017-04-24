@@ -2,6 +2,7 @@
  * Created by tim on 07/03/2017.
  */
 function drawBox(containerId, canvasId, json, color, scoreMultiplier, canvasImage){
+	
     var container=document.getElementById(containerId);
     var canvas=document.getElementById(canvasId);
     var context=canvas.getContext("2d");
@@ -58,7 +59,11 @@ function drawBox(containerId, canvasId, json, color, scoreMultiplier, canvasImag
         var classification = json.locations[i].classification;
         
         if (classification){
-        	context.fillText(classification,x,y+20);
+        	context.fillStyle = "rgba(0,0,0,0.7)";
+        	context.fillText(classification, x, y+20);
+        	context.strokeStyle = "rgba(255,255,255,0.7)";
+        	context.lineWidth = 1;
+        	context.strokeText(classification, x, y+20);
         }
     }
     

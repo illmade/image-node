@@ -4,3 +4,11 @@ block content
     form(action="/classify", method="post", enctype="multipart/form-data")
         input(type="file", name="image")
         button(type="submit", value="Upload") Upload File
+        
+    form(action="/detector", method="post", enctype="multipart/form-data")
+        input(type="file", name="image")
+        button(type="submit", value="Upload") Detect
+        
+    form(action="/show", method="post", enctype="multipart/form-data")
+        input(type="file", name="image")
+        button(type="submit", value="Upload") Show

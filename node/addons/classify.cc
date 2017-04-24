@@ -3,6 +3,8 @@
 #include <nan.h>
 #include <string>
 #include <iostream>
+#include <memory>
+
 #include "classify.h"
 
 namespace ml {

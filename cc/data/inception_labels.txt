@@ -317,7 +317,7 @@ mantis, mantid
 cicada, cicala
 leafhopper
 lacewing, lacewing fly
-dragonfly, darning needle, devil's darning needle, sewing needle, snake feeder, snake doctor, mosquito hawk, skeeter hawk
+dragonfly, darning needle, devil s darning needle, sewing needle, snake feeder, snake doctor, mosquito hawk, skeeter hawk
 damselfly
 admiral
 ringlet, ringlet butterfly
@@ -398,7 +398,7 @@ lionfish
 puffer, pufferfish, blowfish, globefish
 abacus
 abaya
-academic gown, academic robe, judge's robe
+academic gown, academic robe, judge s robe
 accordion, piano accordion, squeeze box
 acoustic guitar
 aircraft carrier, carrier, flattop, attack aircraft carrier
@@ -475,7 +475,7 @@ can opener, tin opener
 cardigan
 car mirror
 carousel, carrousel, merry-go-round, roundabout, whirligig
-carpenter's kit, tool kit
+carpenter s kit, tool kit
 carton
 car wheel
 cash machine, cash dispenser, automated teller machine, automatic teller machine, automated teller, automatic teller, ATM
@@ -605,7 +605,7 @@ horse cart, horse-cart
 hourglass
 iPod
 iron, smoothing iron
-jack-o'-lantern
+jack-o -lantern
 jean, blue jean, denim
 jeep, landrover
 jersey, T-shirt, tee shirt
@@ -631,7 +631,7 @@ lipstick, lip rouge
 Loafer
 lotion
 loudspeaker, speaker, speaker unit, loudspeaker system, speaker system
-loupe, jeweler's loupe
+loupe, jeweler s loupe
 lumbermill, sawmill
 magnetic compass
 mailbag, postbag
@@ -695,7 +695,7 @@ paddle, boat paddle
 paddlewheel, paddle wheel
 padlock
 paintbrush
-pajama, pyjama, pj's, jammies
+pajama, pyjama, pj s, jammies
 palace
 panpipe, pandean pipe, syrinx
 paper towel
@@ -724,12 +724,12 @@ ping-pong ball
 pinwheel
 pirate, pirate ship
 pitcher, ewer
-plane, carpenter's plane, woodworking plane
+plane, carpenter s plane, woodworking plane
 planetarium
 plastic bag
 plate rack
 plow, plough
-plunger, plumber's helper
+plunger, plumber s helper
 Polaroid camera, Polaroid Land camera
 pole
 police van, police wagon, paddy wagon, patrol wagon, wagon, black Maria
@@ -737,7 +737,7 @@ poncho
 pool table, billiard table, snooker table
 pop bottle, soda bottle
 pot, flowerpot
-potter's wheel
+potter s wheel
 power drill
 prayer rug, prayer mat
 printer
@@ -813,7 +813,7 @@ space heater
 space shuttle
 spatula
 speedboat
-spider web, spider's web
+spider web, spider s web
 spindle
 sports car, sport car
 spotlight, spot
@@ -984,7 +984,7 @@ groom, bridegroom
 scuba diver
 rapeseed
 daisy
-yellow lady's slipper, yellow lady-slipper, Cypripedium calceolus, Cypripedium parviflorum
+yellow lady s slipper, yellow lady-slipper, Cypripedium calceolus, Cypripedium parviflorum
 corn
 acorn
 hip, rose hip, rosehip

@@ -60,7 +60,7 @@ tensorflow::Status ImageGraph::ProccessImage(std::string encodedImage, int image
         return inputStatus;
     }
     else {
-        FILE_LOG(logDEBUG) << "Got Image!";
+        FILE_LOG(logDEBUG) << "Decoded Image";
     }
     return Status::OK();
 }

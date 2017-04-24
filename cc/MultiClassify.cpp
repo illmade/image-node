@@ -281,6 +281,16 @@ int MultiClassify::Detect(std::string byteString, int encoding, std::string* jso
     std::vector<Tensor> imageTensors;
     auto importStatus = imageGraph->ProccessImage(byteString, encoding, &imageTensors);
     
+    //do a basic dimension check on the returned image
+    
+    auto imageShape = imageTensors[0].shape();
+    
+    FILE_LOG(logDEBUG) << "Image dimensions: " << imageShape.dim_size(0) << ", " << imageShape.dim_size(1) << ", " << imageShape.dim_size(2);
+
+    if (imageShape.dim_size(1) == 0){
+        return -1;
+    }
+    
     Scope localRoot = Scope::NewRootScope();
     
     std::vector<Tensor> resizeOutputs;
