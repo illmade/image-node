@@ -179,3 +179,34 @@ function classify(containerId, json) {
     }
 
 }
+
+function wrapClassify(){
+	this.apply = function(json){
+		classify("scores", json);
+	}
+}
+
+function wrapBox(options){
+	
+	if (options){
+		this.color = options.color;
+		this.canvas = options.canvas;
+	}
+	else {
+		this.color = "255,0,255";
+		this.canvas = "detect_canvas";
+	}
+	
+	this.apply = function(json){
+		drawBox("drawing", this.canvas, json, this.color, 3.0, "raw_image");
+	}
+	
+}
+
+function wrapFace(){
+	
+	this.apply = function(json){
+		drawFace("drawing", 'face_canvas', json, "255,0,0", 0.6, "raw_image");
+	}
+	
+}

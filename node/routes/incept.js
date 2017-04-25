@@ -8,9 +8,9 @@ const classifier = require('../build/Release/classifier.node');
 /* GET users listing. */
 router
     .post('/', function (req, res) {
-        var imageData = bus.processImage(req, res, this, new function(){
+    	var imageData = bus.processImage(req, res, this, new function(){
         	this.classifyImage = function(buffer, fileType, output){
-        		var results = classifier.detectAsync(buffer, fileType, function(inputs, results) {
+        		var results = classifier.classifyAsync(buffer, fileType, function(inputs, results) {
         			output(results);
         		});
         	}

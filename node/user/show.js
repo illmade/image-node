@@ -4,7 +4,7 @@ var arrayUtils = require('./../common/util.js');
 
 const classifier = require('../build/Release/classifier.node');
 
-exports.ssdUpload = function(req, res, next){
+exports.upload = function(req, res, next){
 	
 	var busboy = new Busboy({ headers: req.headers });
 
@@ -36,19 +36,17 @@ exports.ssdUpload = function(req, res, next){
         });
     });
     busboy.on('field', function(fieldname, val, fieldnameTruncated, valTruncated, encoding, mimetype) {
-        console.log('Field [' + fieldname + ']' + encoding + mimetype);
-        if (fieldname=='image_blob')
-        	buffer = Buffer.from(val, 'base64');
-        if (fieldname=='image_type')
-        	fileType = parseInt(val);
+        console.log('Field [' + fieldname + ']: value: ' + inspect(val));
     });
     busboy.on('finish', function() {
-        console.log('Done parsing form');
-        var re = /'/gi;
-		var detections = classifier.detect(buffer, fileType);
-		var jsoned = JSON.parse(detections.replace(re, "\""));
-		
-		res.json(jsoned);
+        console.log('Done parsing form!');
+
+        var img = new Buffer(buffer, 'base64');
+        var imgString = img.toString('base64');
+	
+        res.render('show', { title: 'Classify', imageData: imgString, imageType: fileType}, function(err, html) {
+            res.send(html);
+        });
     });
 
     req.pipe(busboy);

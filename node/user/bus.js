@@ -2,9 +2,7 @@ var http = require('http');
 var Busboy = require('busboy');
 var arrayUtils = require('./../common/util.js');
 
-const classifier = require('../build/Release/classifier.node');
-
-exports.upload = function(req, res, next){
+exports.processImage = function(req, res, next, proxy){
 	
 	var busboy = new Busboy({ headers: req.headers });
 
@@ -36,17 +34,29 @@ exports.upload = function(req, res, next){
         });
     });
     busboy.on('field', function(fieldname, val, fieldnameTruncated, valTruncated, encoding, mimetype) {
-        console.log('Field [' + fieldname + ']: value: ' + inspect(val));
+        console.log('Field [' + fieldname + ']' + encoding + mimetype);
+        if (fieldname=='image_blob')
+        	buffer = Buffer.from(val, 'base64');
+        if (fieldname=='image_type')
+        	fileType = parseInt(val);
     });
     busboy.on('finish', function() {
-        console.log('Done parsing form!');
+        console.log('Done parsing form');
+        var re = /'/gi;
+        
+        var asynced = function(classifications){
+        	if (classifications) {
 
-        var img = new Buffer(buffer, 'base64');
-        var imgString = img.toString('base64');
-	
-        res.render('show', { title: 'Classify', imageData: imgString, imageType: fileType}, function(err, html) {
-            res.send(html);
-        });
+    			var jsoned = JSON.parse(classifications.replace(re, "\""));
+    			
+    			res.json(jsoned);
+    		}
+    		else {
+    			res.json({});
+    		}
+        }
+        
+		var classifications = proxy.classifyImage(buffer, fileType, asynced);
     });
 
     req.pipe(busboy);

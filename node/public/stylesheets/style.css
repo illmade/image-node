@@ -1,5 +1,5 @@
 body {
-    padding: 50px;
+    padding: 10px 50px 50px 50px;
     font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
@@ -9,6 +9,14 @@ body {
 
 .container:after {
     clear: both;
+}
+
+.console {
+	margin-top: 1.2em;
+	background: #000000;
+	color: #ffffff;
+	font-size: smaller;
+	width: 40em;
 }
 
 .contained {
@@ -30,6 +38,10 @@ body {
 
 .text {
     width: 50em;
+}
+
+#scores {
+    height: 8em;
 }
 
 a {

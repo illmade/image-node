@@ -13,10 +13,22 @@ block content
         canvas(class="contained bottom" id='body_canvas')
         canvas(class="contained top" id='face_canvas')
         canvas(class="contained top" id='detect_canvas')
+        
+    p(class="text")
+        ul(id="scores")
 
-    form(action="/classify", method="post", enctype="multipart/form-data")
+    form(action="/show", method="post", enctype="multipart/form-data")
         input(type="file", name="image")
         button(type="submit", value="Upload") Upload File
         
+    div(id="console" class="console")
+        
     script.
-        sendImageData('#{imageData}', #{imageType}, "/detector");
+        sendImageData('#{imageData}', #{imageType}, "/box", 
+        	new wrapBox({"canvas": 'body_canvas', "color": "255,255,255"}));
+        sendImageData('#{imageData}', #{imageType}, "/face", 
+        	new wrapFace());
+        sendImageData('#{imageData}', #{imageType}, "/detector", 
+        	new wrapBox());
+        sendImageData('#{imageData}', #{imageType}, "/incept", 
+        	new wrapClassify());

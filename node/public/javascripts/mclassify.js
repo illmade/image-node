@@ -1,5 +1,14 @@
-function sendImageData(blob, mime, dest) {
+function sendImageData(blob, mime, dest, wrapper) {
     
+	var docConsole=document.getElementById("console");
+	
+	var start = window.performance.now();
+
+	var content = document.createTextNode("checking: " + dest);
+	docConsole.appendChild(content);
+	var br = document.createElement("br");
+	docConsole.appendChild(br);
+	
 	var formData = new FormData();
 
     formData.append("image_blob", blob);
@@ -11,8 +20,15 @@ function sendImageData(blob, mime, dest) {
       if (xhr.readyState === 4) {
         if (xhr.status === 200) {
           console.log(xhr.responseText);
+          var end = window.performance.now();
+          var secs = end - start;
+          var content = document.createTextNode("got: " + dest + ", in: " + secs);
+      	  docConsole.appendChild(content);
+      	  var br = document.createElement("br");
+    	  docConsole.appendChild(br);
+          
           var json = JSON.parse(xhr.responseText);
-          drawBox("drawing", 'detect_canvas', json, "255,0,255", 3.0, "raw_image");
+          wrapper.apply(json);
         } else {
           console.error(xhr.statusText);
         }

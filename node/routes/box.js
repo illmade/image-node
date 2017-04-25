@@ -10,7 +10,7 @@ router
     .post('/', function (req, res) {
         var imageData = bus.processImage(req, res, this, new function(){
         	this.classifyImage = function(buffer, fileType, output){
-        		var results = classifier.detectAsync(buffer, fileType, function(inputs, results) {
+        		var results = classifier.boxAsync(buffer, fileType, function(inputs, results) {
         			output(results);
         		});
         	}
@@ -19,3 +19,5 @@ router
 
 
 module.exports = router;
+
+

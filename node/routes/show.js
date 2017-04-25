@@ -1,12 +1,12 @@
 var express = require('express');
 
 var router = express.Router();
-var bus = require('../user/bus.js');
+var show = require('../user/show.js');
 
 /* GET users listing. */
 router
     .post('/', function (req, res) {
-        var imageData = bus.upload(req, res, this);
+        var imageData = show.upload(req, res, this);
     });
 
 

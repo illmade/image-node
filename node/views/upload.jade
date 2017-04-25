@@ -9,6 +9,12 @@ block content
         input(type="file", name="image")
         button(type="submit", value="Upload") Detect
         
+    form(action="/incept", method="post", enctype="multipart/form-data")
+        input(type="file", name="image")
+        button(type="submit", value="Upload") Incept
+        
     form(action="/show", method="post", enctype="multipart/form-data")
         input(type="file", name="image")
         button(type="submit", value="Upload") Show
+        
+    
