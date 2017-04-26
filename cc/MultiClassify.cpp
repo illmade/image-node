@@ -210,6 +210,22 @@ int MultiClassify::Align(std::string byteString, int encoding, std::string* json
     std::vector<Tensor> imageTensors;
     auto importStatus = imageGraph->ProccessImage(byteString, encoding, &imageTensors);
     
+    if (!importStatus.ok()) {
+        LOG(ERROR) << "processing image failed: " << importStatus;
+        return -1;
+    }
+    else {
+        FILE_LOG(logDEBUG) << "got image";
+    }
+    
+    auto imageShape = imageTensors[0].shape();
+    
+    FILE_LOG(logDEBUG) << "Image dimensions: " << imageShape.dim_size(0) << ", " << imageShape.dim_size(1) << ", " << imageShape.dim_size(2);
+    
+    if (imageShape.dim_size(1) == 0){
+        return -1;
+    }
+    
     LOG(INFO) << "Processed align image";
     int width = imageTensors[0].shape().dim_size(2);
     int height = imageTensors[0].shape().dim_size(1);
@@ -253,6 +269,22 @@ int MultiClassify::Classify(std::string byteString, int encoding, std::string* j
     std::vector<Tensor> imageTensors;
     auto importStatus = imageGraph->ProccessImage(byteString, encoding, &imageTensors);
     
+    if (!importStatus.ok()) {
+        LOG(ERROR) << "processing image failed: " << importStatus;
+        return -1;
+    }
+    else {
+        FILE_LOG(logDEBUG) << "got image";
+    }
+    
+    auto imageShape = imageTensors[0].shape();
+    
+    FILE_LOG(logDEBUG) << "Image dimensions: " << imageShape.dim_size(0) << ", " << imageShape.dim_size(1) << ", " << imageShape.dim_size(2);
+    
+    if (imageShape.dim_size(1) == 0){
+        return -1;
+    }
+    
     Scope localRoot = Scope::NewRootScope();
     
     std::vector<Tensor> resizeOutputs;
@@ -280,7 +312,14 @@ int MultiClassify::Detect(std::string byteString, int encoding, std::string* jso
 
     std::vector<Tensor> imageTensors;
     auto importStatus = imageGraph->ProccessImage(byteString, encoding, &imageTensors);
-    
+   
+    if (!importStatus.ok()) {
+        LOG(ERROR) << "processing image failed: " << importStatus;
+        return -1;
+    }
+    else {
+        FILE_LOG(logDEBUG) << "got image";
+    }
     //do a basic dimension check on the returned image
     
     auto imageShape = imageTensors[0].shape();
@@ -320,6 +359,22 @@ int MultiClassify::Box(std::string byteString, int encoding, std::string* json){
 
     std::vector<Tensor> imageTensors;
     auto importStatus = imageGraph->ProccessImage(byteString, encoding, &imageTensors);
+    
+    if (!importStatus.ok()) {
+        LOG(ERROR) << "processing image failed: " << importStatus;
+        return -1;
+    }
+    else {
+        FILE_LOG(logDEBUG) << "got image";
+    }
+    
+    auto imageShape = imageTensors[0].shape();
+    
+    FILE_LOG(logDEBUG) << "Image dimensions: " << imageShape.dim_size(0) << ", " << imageShape.dim_size(1) << ", " << imageShape.dim_size(2);
+    
+    if (imageShape.dim_size(1) == 0){
+        return -1;
+    }
     
     Scope localRoot = Scope::NewRootScope();
     ClientSession session(localRoot);
