@@ -6,6 +6,9 @@
 //
 //
 
+#ifndef Multibox_hpp
+#define Multibox_hpp
+
 #include "tensorflow/cc/client/client_session.h"
 #include "tensorflow/cc/ops/standard_ops.h"
 #include "tensorflow/core/framework/tensor.h"
@@ -13,9 +16,6 @@
 
 #include <stdio.h>
 #include <memory>
-
-#ifndef Multibox_hpp
-#define Multibox_hpp
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,17 +39,14 @@ extern "C" {
             int num_detections;
             int num_boxes;
             
-            std::vector<float> labels;
+            std::vector<float> locationPriors;
             size_t foundLabelCount;
             
-            tensorflow::Status StringToImage(tensorflow::Scope root, tensorflow::Input encodedImage,
-                                             int imageType, tensorflow::Output* imageOutput);
-            
-            tensorflow::Status InitializeLabels();
+            tensorflow::Status InitializeLocationPriors();
             
             tensorflow::Status GetTopDetections(const std::vector<tensorflow::Tensor>& outputs, int numLabels, tensorflow::Tensor* indices, tensorflow::Tensor* scores);
             
-            tensorflow::Status PrintTopDetections(const std::vector<tensorflow::Tensor>& outputs, tensorflow::Tensor& inputImage, std::string* json);
+            tensorflow::Status PrintTopDetections(const std::vector<tensorflow::Tensor>& outputs, tensorflow::Tensor& inputImage, std::string* json, double* classifyTime);
             
             void DecodeLocation(const float* encoded_location, const float* box_priors,
                                 float* decoded_location);

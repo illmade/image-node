@@ -26,11 +26,15 @@ Classifier::Classifier(std::string labels, std::string input, std::string output
     graphInput = input;
     graphOutput = output;
     
-    InitializeLabels();
+    auto labelStatus = InitializeLabels();
+    
+    if (!labelStatus.ok()){
+        FILE_LOG(logDEBUG) << "no labels for classifier";
+    }
     FILE_LOG(logDEBUG) << "initialized Classifier";
 }
 
-//We only need to get the labels once
+//Get the labels from a file
 Status Classifier::InitializeLabels(){
     
     auto file = std::ifstream(labelsFile);
@@ -87,7 +91,7 @@ int Classifier::ReadAndRun(std::vector<Tensor>* imageTensors, std::string* json,
     double timeTaken = (t1 - t0);
     FILE_LOG(logDEBUG) << "Classify time was: " << timeTaken;
     
-    Status printStatus = PrintTopLabels(classifyOutputs, labels.size(), json);
+    Status printStatus = PrintTopLabels(classifyOutputs, labels.size(), json, &timeTaken);
     
     if (!printStatus.ok()) {
         LOG(ERROR) << "Running print failed: " << printStatus;
@@ -102,7 +106,7 @@ int Classifier::ReadAndRun(std::vector<Tensor>* imageTensors, std::string* json,
 
 // Given the output of a model run, and the name of a file containing the labels
 // this prints out the top five highest-scoring values.
-Status Classifier::PrintTopLabels(const std::vector<Tensor>& outputs, const int labelCount, std::string* json) {
+Status Classifier::PrintTopLabels(const std::vector<Tensor>& outputs, const int labelCount, std::string* json, double* timeTaken) {
     
     const int howManyLabels = std::min(5, static_cast<int>(labelCount));
     
@@ -121,7 +125,7 @@ Status Classifier::PrintTopLabels(const std::vector<Tensor>& outputs, const int 
     FILE_LOG(logDEBUG) << "Top scores: " << indices.DebugString();
     
     std::ostringstream buffer;
-    buffer << "{'scores': [";
+    buffer << "{'time': " << *timeTaken << ", 'scores': [";
     
     for (int pos = 0; pos < howManyLabels; ++pos) {
         const int label_index = indices_flat(pos);

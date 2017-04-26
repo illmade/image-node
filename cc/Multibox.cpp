@@ -31,11 +31,12 @@ Multibox::Multibox(std::string path){
     num_detections = 10;
     num_boxes = 784;
     
-    std::vector<float> labels;
+    auto priorInitialization = InitializeLocationPriors();
+    if (!priorInitialization.ok()) {
+        LOG(ERROR) << "Getting priors failed: " << priorInitialization;
+    }
     
-    InitializeLabels();
-    
-    FILE_LOG(logDEBUG) << "initialized Labels";
+    FILE_LOG(logDEBUG) << "initialized location priors";
 }
 
 Multibox::~Multibox(){
@@ -60,7 +61,13 @@ int Multibox::ReadAndRun(std::vector<tensorflow::Tensor>* imageTensors, std::str
         FILE_LOG(logDEBUG) << "Got imageboxes";
     }
     
-    Status outputStatus = PrintTopDetections(boxOutputs, (*imageTensors)[0], json);
+    timestamp_t t1 = timer::get_timestamp();
+    double classifyTime = (t1 - t0);
+    FILE_LOG(logDEBUG) << "Classify time was: " << classifyTime;
+    
+
+    Status outputStatus = PrintTopDetections(boxOutputs, (*imageTensors)[0], json, &classifyTime);
+    
     if (!outputStatus.ok()) {
         LOG(ERROR) << "Failed to create json: " << outputStatus;
         return -1;
@@ -69,37 +76,33 @@ int Multibox::ReadAndRun(std::vector<tensorflow::Tensor>* imageTensors, std::str
         FILE_LOG(logDEBUG) << "Got json";
     }
     
-    timestamp_t t1 = timer::get_timestamp();
-    double classifyTime = (t1 - t0);
-    FILE_LOG(logDEBUG) << "Classify time was: " << classifyTime;
-
-    return 1;
+        return 1;
 }
 
-//We only need to get the labels once
-Status Multibox::InitializeLabels(){
+//We only need to get the LocationPriors once
+Status Multibox::InitializeLocationPriors(){
     
-    std::string labelsFileName = rootPath + "data/multibox_location_priors.txt";
+    std::string locationPriorsFileName = rootPath + "data/multibox_location_priors.txt";
     
-    auto file = std::ifstream(labelsFileName);
+    auto file = std::ifstream(locationPriorsFileName);
     if (!file) {
-        FILE_LOG(logDEBUG) << "no file " + labelsFileName;
-        return tensorflow::errors::NotFound("Labels file ", labelsFileName,
+        FILE_LOG(logDEBUG) << "no file " + locationPriorsFileName;
+        return tensorflow::errors::NotFound("locationPriors file ", locationPriorsFileName,
                                             " not found.");
     }
-    FILE_LOG(logDEBUG) << "found file " + labelsFileName;
+    FILE_LOG(logDEBUG) << "found file " + locationPriorsFileName;
     
-    labels.clear();
+    locationPriors.clear();
     string line;
     while (std::getline(file, line)) {
         std::vector<float> tokens;
         CHECK(tensorflow::str_util::SplitAndParseAsFloats(line, ',', &tokens));
         for (auto number : tokens) {
-            labels.push_back(number);
+            locationPriors.push_back(number);
         }
 
     }
-    foundLabelCount = labels.size();
+    foundLabelCount = locationPriors.size();
     
     return Status::OK();
 }
@@ -132,9 +135,9 @@ Status Multibox::GetTopDetections(const std::vector<Tensor>& outputs, int numLab
 }
 
 
-// Given the output of a model run, and the name of a file containing the labels
-// this prints out the top five highest-scoring values.
-Status Multibox::PrintTopDetections(const std::vector<Tensor>& outputs, Tensor& inputImage, std::string* json) {
+// Given the output of a model run print out the top highest-scoring values.
+Status Multibox::PrintTopDetections(const std::vector<Tensor>& outputs, Tensor& inputImage,
+                                    std::string* json, double* classifyTime) {
     
     std::vector<float> locations;
     
@@ -160,7 +163,7 @@ Status Multibox::PrintTopDetections(const std::vector<Tensor>& outputs, Tensor& 
     FILE_LOG(logDEBUG) << "===== Top " << numLabels << " Detections ======" << imageWidth << "," << imageHeight;
     
     std::ostringstream buffer;
-    buffer << "{'size': [" << imageWidth << ", " << imageHeight << "], 'locations': [";
+    buffer << "{'time': " << *classifyTime << ", 'size': [" << imageWidth << ", " << imageHeight << "], 'locations': [";
     
     for (int pos = 0; pos < numLabels; ++pos) {
         const int labelIndex = indicesFlat(pos);
@@ -168,7 +171,7 @@ Status Multibox::PrintTopDetections(const std::vector<Tensor>& outputs, Tensor& 
         
         float decodedLocation[4];
         DecodeLocation(&locationsEncoded(labelIndex * 4),
-                       &labels[labelIndex * 8], decodedLocation);
+                       &locationPriors[labelIndex * 8], decodedLocation);
         
         float left = decodedLocation[0] * imageWidth;
         float top = decodedLocation[1] * imageHeight;

@@ -42,7 +42,8 @@ extern "C" {
             tensorflow::Status GetTopLabels(const std::vector<tensorflow::Tensor>& outputs, int numLabels,
                                             tensorflow::Tensor* indices, tensorflow::Tensor* scores);
             
-            tensorflow::Status PrintTopLabels(const std::vector<tensorflow::Tensor>& outputs, const int labelCount, std::string* json);
+            tensorflow::Status PrintTopLabels(const std::vector<tensorflow::Tensor>& outputs, const int labelCount,
+                                              std::string* json, double* timeTaken);
         };
     }
     

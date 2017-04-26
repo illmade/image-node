@@ -51,7 +51,8 @@ extern "C" {
             
             size_t foundLabelCount;
             
-            int CreateBoxes(tensorflow::Tensor imageTensor, tensorflow::Tensor* locations, std::string* json);
+            int CreateBoxes(tensorflow::Tensor imageTensor, tensorflow::Tensor* locations,
+                            std::string* json, double* classifyTime);
             
             void AddWHLevel(int level, std::vector<float> ws, std::vector<float> hs);
             tensorflow::Status AddXYLevel(int featureShape, float featureAdjust, std::unique_ptr<tensorflow::Session>* session);

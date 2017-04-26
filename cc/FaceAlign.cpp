@@ -64,24 +64,35 @@ int FaceAlign::ReadAndRun(std::vector<Tensor>* imageTensors, std::string* json,
     Tensor pNetOutput;
     std::vector<Tensor> rNetOutput;
     
-    PNet((*imageTensors)[0], &pNetOutput, faceSession);
+    auto pnetStatus = PNet((*imageTensors)[0], &pNetOutput, faceSession);
+    
+    if (!pnetStatus.ok()) {
+        LOG(ERROR) << "Getting pnet failed: " << pnetStatus;
+        return -1;
+    }
     
     int pnetOutput = pNetOutput.shape().dim_size(0);
     
     //if pnet does not produce output skip RNet
     if (pnetOutput > 0){
-        RNet((*imageTensors)[0], pNetOutput, &rNetOutput, faceSession);
+        auto rnetStatus = RNet((*imageTensors)[0], pNetOutput, &rNetOutput, faceSession);
+        
+        if (!rnetStatus.ok()) {
+            LOG(ERROR) << "Getting rnet failed: " << rnetStatus;
+            return -1;
+        }
+        
         FILE_LOG(logDEBUG) << "creating ouput " << rNetOutput[0].DebugString();
     }
     else {
         rNetOutput.clear();
     }
     
-    CreateBoxes((*imageTensors)[0], &rNetOutput, json);
-    
     timestamp_t t1 = timer::get_timestamp();
     double classifyTime = (t1 - t0);
     FILE_LOG(logDEBUG) << "Classify time was: " << classifyTime;
+    
+    CreateBoxes((*imageTensors)[0], &rNetOutput, json, &classifyTime);
     
     return 1;
 }
@@ -89,7 +100,8 @@ int FaceAlign::ReadAndRun(std::vector<Tensor>* imageTensors, std::string* json,
 //
 // Given the image tensor and the identified locations create the json to send back
 //
-int FaceAlign::CreateBoxes(Tensor imageTensor, std::vector<Tensor>* locationTensors, std::string* json){
+int FaceAlign::CreateBoxes(Tensor imageTensor, std::vector<Tensor>* locationTensors,
+                           std::string* json, double* classifyTime){
     
     float scoreMutliplier = 1.;
     float alignments = locationTensors->size();
@@ -100,7 +112,7 @@ int FaceAlign::CreateBoxes(Tensor imageTensor, std::vector<Tensor>* locationTens
     float height = imageTensor.shape().dim_size(1);
     
     std::ostringstream buffer;
-    buffer << "{'size': [" << width << ", " << height << "], 'locations': [";
+    buffer << "{'size': [" << width << ", " << height << "], 'time': " << *classifyTime << ", 'locations': [";
     
     if (alignments==0){
         buffer << "]}";
@@ -254,7 +266,11 @@ Status FaceAlign::PNet(Tensor imageTensorIn, Tensor* pnetTensor,
         
         FILE_LOG(logDEBUG) << "SCALE session about to run: ";
         
-        session.Run({imageOutput}, &scaleOutputs);
+        auto alignScaling = session.Run({imageOutput}, &scaleOutputs);
+        if (!alignScaling.ok()) {
+            LOG(ERROR) << "Could not scale alignment " << alignScaling;
+            return alignScaling;
+        }
         
         std::vector<Tensor> pNetOutputs;
         
@@ -360,8 +376,8 @@ Status FaceAlign::PNet(Tensor imageTensorIn, Tensor* pnetTensor,
     FILE_LOG(logDEBUG) << "all boxes " << sizeof(allOutputs);
     
     Tensor concated;
-    tensor::Concat(allOutputs, &concated);
-    FILE_LOG(logDEBUG) << "concat " << concated.DebugString();
+    auto concatTensor = tensor::Concat(allOutputs, &concated);
+    FILE_LOG(logDEBUG) << "concat " << concated.DebugString() << concatTensor;
     
     int remainingBoxes = concated.shape().dim_size(0);
     
