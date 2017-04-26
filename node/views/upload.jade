@@ -1,22 +1,41 @@
 extends layout
 
 block content
+
+	h3 Upload options
+	Various ways to communiate with the tensorflow backend
+
+	p Does all the processing in node before sending the page back
 	form(action="/classify", method="post", enctype="multipart/form-data")
 		input(type="file", name="image")
 		button(type="submit", value="Upload") Upload File
         
+	p Connects to the endpoint for the detector 
 	form(action="/detector", method="post", enctype="multipart/form-data")
 		input(type="file", name="image")
 		button(type="submit", value="Upload") Detect
         
+	p Connects to the endpoint for the inception service
 	form(action="/incept", method="post", enctype="multipart/form-data")
 		input(type="file", name="image")
 		button(type="submit", value="Upload") Incept
-        
+		
+	p Connects to the endpoint for the box service
+	form(action="/box", method="post", enctype="multipart/form-data")
+		input(type="file", name="image")
+		button(type="submit", value="Upload") Box
+		
+	p Connects to the endpoint for the face align service
+	form(action="/face", method="post", enctype="multipart/form-data")
+		input(type="file", name="image")
+		button(type="submit", value="Upload") Align
+       
+	p Try batching inputs to inception (results are only in console for the moment)    
 	form(action="/batch", method="post", enctype="multipart/form-data")
 		input(type="file", name="image", multiple="multiple")
 		button(type="submit", value="Upload") Batch
-        
+    
+	p Loads the image then calls the services asynchronosly (this uses a simple image-string and is unsuitable for large image files at the moment)
 	form(action="/show", method="post", enctype="multipart/form-data")
 		input(type="file", name="image")
 		button(type="submit", value="Upload") Show

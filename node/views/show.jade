@@ -25,11 +25,12 @@ block content
         
     script.
         var blob = '#{imageData}';
-        sendImageData(blob, #{imageType}, "/box", 
+        var time = window.performance.now();
+        sendImageData(time, blob, #{imageType}, "/box", 
         	new wrapBox({"canvas": 'body_canvas', "color": "255,255,255"}));
-        sendImageData(blob, #{imageType}, "/face", 
+        sendImageData(time, blob, #{imageType}, "/face", 
         	new wrapFace());
-        sendImageData(blob, #{imageType}, "/detector", 
+        sendImageData(time, blob, #{imageType}, "/detector", 
         	new wrapBox());
-        sendImageData(blob, #{imageType}, "/incept", 
+        sendImageData(time, blob, #{imageType}, "/incept", 
         	new wrapClassify());

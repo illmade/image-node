@@ -1,4 +1,4 @@
-function sendImageData(blob, mime, dest, wrapper) {
+function sendImageData(time, blob, mime, dest, wrapper) {
     
 	var docConsole=document.getElementById("console");
 	
@@ -22,7 +22,8 @@ function sendImageData(blob, mime, dest, wrapper) {
           console.log(xhr.responseText);
           var end = window.performance.now();
           var secs = end - start;
-          var content = document.createTextNode("got: " + dest + ", in: " + secs);
+          var total = end - time;
+          var content = document.createTextNode("got: " + dest + ", in: " + secs + ", total: " + total);
       	  docConsole.appendChild(content);
       	  var br = document.createElement("br");
     	  docConsole.appendChild(br);

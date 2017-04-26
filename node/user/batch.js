@@ -9,6 +9,9 @@ exports.upload = function(req, res, next, proxy){
 	var busboy = new Busboy({ headers: req.headers });
 
 	var fileHash = {};
+	
+	var hrstart = process.hrtime();
+	var files = 0;
     
     busboy.on('file', function(fieldname, file, filename, encoding, mimetype) {
     	
@@ -46,7 +49,16 @@ exports.upload = function(req, res, next, proxy){
             
             var asynced = function(classifications){
             	if (classifications) {
-
+            		files = files + 1;
+            		
+            		hrend = process.hrtime(hrstart);
+                    var timeTaken = hrend[1]/1000000;
+                    var secs = hrend[0] + "" + timeTaken;
+                    
+                    var perFile = files/secs * 1000;
+                    
+                    console.log("files: " + files + " in " + secs + ". At " + perFile + " per s");
+            		
             		console.log(classifications);
         			//var jsoned = JSON.parse(classifications.replace(re, "\""));
         			
