@@ -122,8 +122,8 @@ int SingleShotDetector::ReadAndRun(std::vector<tensorflow::Tensor>* imageTensors
     }
     
     Tensor concated;
-    tensor::Concat(bboxes, &concated);
-    FILE_LOG(logDEBUG) << "concat " << concated.DebugString();
+    auto tensorConcat = tensor::Concat(bboxes, &concated);
+    FILE_LOG(logDEBUG) << "concat " << concated.DebugString() << tensorConcat;
     
     std::vector<std::pair<string, tensorflow::Tensor>> nmsFeed = {
         {"nms/bounds:0", concated},
@@ -151,6 +151,11 @@ int SingleShotDetector::ReadAndRun(std::vector<tensorflow::Tensor>* imageTensors
     
     int success = -1;
     
+    timestamp_t t1 = timer::get_timestamp();
+    double classifyTime = (t1 - t0);
+    FILE_LOG(logDEBUG) << "Detect time was: " << classifyTime;
+    
+
     if (count>0){
         
         FILE_LOG(logDEBUG) << "nms count " << count << " indices" << nmsOutputs[0].DebugString();
@@ -176,25 +181,20 @@ int SingleShotDetector::ReadAndRun(std::vector<tensorflow::Tensor>* imageTensors
         
         FILE_LOG(logDEBUG) << "picks" << pickOutputs[0].DebugString();
         
-        success = CreateBoxes((*imageTensors)[0], &pickOutputs[0], json);
+        success = CreateBoxes((*imageTensors)[0], &pickOutputs[0], json, &classifyTime);
 
     }
     else {
         //we could just give an empty json object - but keep the output standard
-        success = CreateBoxes((*imageTensors)[0], &nmsOutputs[0], json);
+        success = CreateBoxes((*imageTensors)[0], &nmsOutputs[0], json, &classifyTime);
     }
-    
-    timestamp_t t1 = timer::get_timestamp();
-    double classifyTime = (t1 - t0);
-    FILE_LOG(logDEBUG) << "Detect time was: " << classifyTime;
-
-    return success;
+        return success;
 }
 
 //
 // Given the image tensor and the identified locations create the json to send back
 //
-int SingleShotDetector::CreateBoxes(Tensor imageTensor, Tensor* locations, std::string* json){
+int SingleShotDetector::CreateBoxes(Tensor imageTensor, Tensor* locations, std::string* json, double* classifyTime){
     
     int number = (*locations).shape().dim_size(0);
     
@@ -204,7 +204,7 @@ int SingleShotDetector::CreateBoxes(Tensor imageTensor, Tensor* locations, std::
     float height = imageTensor.shape().dim_size(1);
     
     std::ostringstream buffer;
-    buffer << "{'size': [" << width << ", " << height << "], 'locations': [";
+    buffer << "{'size': [" << width << ", " << height << "], 'time': " << *classifyTime << ", 'locations': [";
     
     if (number==0){
         buffer << "]}";
@@ -326,7 +326,10 @@ Status SingleShotDetector::InitializePriors(std::unique_ptr<tensorflow::Session>
     float featureAdjust[] = {37.5, 18.5, 9.375, 4.6875, 3, 1};
     
     for (int i=0; i<6; i++){
-        AddXYLevel(featureShapes[i], featureAdjust[i], session);
+        auto addedLevel = AddXYLevel(featureShapes[i], featureAdjust[i], session);
+        if (!addedLevel.ok()) {
+            LOG(ERROR) << "Failed to add level: " << i;
+        }
     }
     
     return Status::OK();

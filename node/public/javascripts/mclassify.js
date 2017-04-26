@@ -10,7 +10,7 @@ function sendImageData(blob, mime, dest, wrapper) {
 	docConsole.appendChild(br);
 	
 	var formData = new FormData();
-
+	
     formData.append("image_blob", blob);
     formData.append("image_type", mime);
     

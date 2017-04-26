@@ -24,11 +24,12 @@ block content
     div(id="console" class="console")
         
     script.
-        sendImageData('#{imageData}', #{imageType}, "/box", 
+        var blob = '#{imageData}';
+        sendImageData(blob, #{imageType}, "/box", 
         	new wrapBox({"canvas": 'body_canvas', "color": "255,255,255"}));
-        sendImageData('#{imageData}', #{imageType}, "/face", 
+        sendImageData(blob, #{imageType}, "/face", 
         	new wrapFace());
-        sendImageData('#{imageData}', #{imageType}, "/detector", 
+        sendImageData(blob, #{imageType}, "/detector", 
         	new wrapBox());
-        sendImageData('#{imageData}', #{imageType}, "/incept", 
+        sendImageData(blob, #{imageType}, "/incept", 
         	new wrapClassify());

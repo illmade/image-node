@@ -1,20 +1,22 @@
 extends layout
 
 block content
-    form(action="/classify", method="post", enctype="multipart/form-data")
-        input(type="file", name="image")
-        button(type="submit", value="Upload") Upload File
+	form(action="/classify", method="post", enctype="multipart/form-data")
+		input(type="file", name="image")
+		button(type="submit", value="Upload") Upload File
         
-    form(action="/detector", method="post", enctype="multipart/form-data")
-        input(type="file", name="image")
-        button(type="submit", value="Upload") Detect
+	form(action="/detector", method="post", enctype="multipart/form-data")
+		input(type="file", name="image")
+		button(type="submit", value="Upload") Detect
         
-    form(action="/incept", method="post", enctype="multipart/form-data")
-        input(type="file", name="image")
-        button(type="submit", value="Upload") Incept
+	form(action="/incept", method="post", enctype="multipart/form-data")
+		input(type="file", name="image")
+		button(type="submit", value="Upload") Incept
         
-    form(action="/show", method="post", enctype="multipart/form-data")
-        input(type="file", name="image")
-        button(type="submit", value="Upload") Show
+	form(action="/batch", method="post", enctype="multipart/form-data")
+		input(type="file", name="image", multiple="multiple")
+		button(type="submit", value="Upload") Batch
         
-    
+	form(action="/show", method="post", enctype="multipart/form-data")
+		input(type="file", name="image")
+		button(type="submit", value="Upload") Show
