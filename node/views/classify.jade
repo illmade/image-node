@@ -23,7 +23,6 @@ block content
         drawBox("drawing", 'detect_canvas', #{detectJson}, "255,0,255", 3.0, "raw_image");
         classify("scores", #{classificationJson});
         
-
     form(action="/classify", method="post", enctype="multipart/form-data")
         input(type="file", name="image")
         button(type="submit", value="Upload") Upload File

@@ -21,11 +21,15 @@ body {
 
 .contained {
     position: absolute;
-    width: 500px;
+	max-height: 100%;
 }
 
 .top {
 	z-index: 10;
+}
+
+.offscreen {
+	display: none;
 }
 
 .bottom {
@@ -42,6 +46,17 @@ body {
 
 #scores {
     height: 8em;
+}
+
+img {
+	width: auto;
+}
+
+#drawing {
+	display: block;
+	height: 400px;
+	max-height: 400px;
+	max-width: 500px;
 }
 
 a {

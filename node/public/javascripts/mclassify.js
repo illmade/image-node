@@ -1,3 +1,37 @@
+function copyToCanvas(img, canvasId, imageType) {
+	
+    var img = document.getElementById(img);
+    var width = img.getBoundingClientRect().width;
+    var height = img.getBoundingClientRect().height;
+    var nwidth = img.naturalWidth;
+    var nheight = img.naturalHeight;
+    
+    var scaling = width / nwidth;
+    
+    var canvas = document.getElementById(canvasId);
+    canvas.width = width;
+    canvas.height = height;
+    var ctx = canvas.getContext("2d");
+    ctx.scale(scaling, scaling);
+    ctx.drawImage(img,0,0);
+    
+    var output = "image/png";
+    if (imageType = 1){
+    	output = "image/jpeg";
+    }
+    else if (imageType = 2){
+    	output = "image/gif";
+    }
+    
+    var dataURL = canvas.toDataURL(output);
+    
+    //remove header e.g 'data:image/png;base64,'
+    var start = dataURL.indexOf(",");
+    var trimmedData = dataURL.substring(start+1);
+    
+    return trimmedData;
+}
+
 function sendImageData(time, blob, mime, dest, wrapper) {
     
 	var docConsole=document.getElementById("console");

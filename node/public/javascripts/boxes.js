@@ -1,3 +1,15 @@
+function toggle(check, display){
+	
+	var canvas=document.getElementById(display);
+	
+	if (check.checked){
+		canvas.style.display="None";
+	}
+	else {
+		canvas.style.display="Inline";
+	}
+}
+
 /**
  * Created by tim on 07/03/2017.
  */
@@ -11,7 +23,7 @@ function drawBox(containerId, canvasId, json, color, scoreMultiplier, canvasImag
     
     var scalingElement;
     if (canvasImage){
-    	scalingElement = document.getElementById(canvasImage)
+    	scalingElement = document.getElementById(canvasImage);
     }
     else {
     	scalingElement = canvas;
@@ -26,7 +38,7 @@ function drawBox(containerId, canvasId, json, color, scoreMultiplier, canvasImag
     var height = json.size[1] * scaling;
 
     canvas.height = height;
-    container.style.height = "" + height + "px";
+    //container.style.height = "" + height + "px";
     
     context.scale(scaling, scaling);
     context.font = "30px Arial";
@@ -97,7 +109,7 @@ function drawFace(containerId, canvasId, json, color, scoreMultiplier, canvasIma
     var height = json.size[1] * scaling;
 
     canvas.height = height;
-    container.style.height = "" + height + "px";
+    //container.style.height = "" + height + "px";
     
     context.scale(scaling, scaling);
     

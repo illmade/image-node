@@ -8,11 +8,21 @@ block content
     script(src='/javascripts/mclassify.js')
     
     h3= 'Image Classification'
-    p(class="container" id="drawing")
+    span(class="container" id="drawing")
         img(class="contained" id="raw_image", src='data:image/jpg;base64,#{imageData}')
+        canvas(class="offscreen" id='image_canvas')
         canvas(class="contained bottom" id='body_canvas')
         canvas(class="contained top" id='face_canvas')
         canvas(class="contained top" id='detect_canvas')
+        
+    div
+        form
+            | body: 
+            input(type="checkbox" name="myRadios" onchange="toggle(this, 'body_canvas');")
+            | , face: 
+            input(type="checkbox" name="myRadios" onchange="toggle(this, 'face_canvas');")
+            | , detect:
+            input(type="checkbox" name="myRadios" onchange="toggle(this, 'detect_canvas');")
         
     p(class="text")
         ul(id="scores")
@@ -24,7 +34,7 @@ block content
     div(id="console" class="console")
         
     script.
-        var blob = '#{imageData}';
+        var blob = copyToCanvas("raw_image", "image_canvas", #{imageType});
         var time = window.performance.now();
         sendImageData(time, blob, #{imageType}, "/box", 
         	new wrapBox({"canvas": 'body_canvas', "color": "255,255,255"}));
