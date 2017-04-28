@@ -6,3 +6,7 @@ cc/data/ssd.pb
 .settings
 node/build/Makefile
 *.pyc
+.idea
+flickr/project/
+flickr/target/
+flickr/src/app/resources/
