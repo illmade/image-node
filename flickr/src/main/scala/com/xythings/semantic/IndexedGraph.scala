@@ -17,7 +17,8 @@ object IndexedGraph {
   /**
     * create an indexedGraph with the default PrefixManager
     */
-  def apply(inputEdges : Iterable[Edge], indexes : Iterable[IndexFactory]) = new SimpleIndexedGraph(inputEdges, indexes, PrefixManager(None))
+  def apply(inputEdges : Iterable[Edge], indexes : Iterable[IndexFactory]) =
+    new SimpleIndexedGraph(inputEdges, indexes, PrefixManager(None))
   /**
     * create an indexedGraph with the default Indexes: List(ResourceIndex, PropertyIndex, ResourcePropertyIndex, ObjectIndex, PropertyObjectIndex)
     */
@@ -29,7 +30,8 @@ object IndexedGraph {
 /**
   * Implement EdgeStore and EdgeQuery
   */
-class SimpleIndexedGraph(inputEdges : Iterable[Edge], indexes : Iterable[IndexFactory], prefixManager : PrefixManager) extends IndexedGraph {
+class SimpleIndexedGraph(inputEdges : Iterable[Edge], indexes : Iterable[IndexFactory], prefixManager : PrefixManager)
+    extends IndexedGraph {
 
   private val logger = java.util.logging.Logger.getLogger("SimpleIndexedGraph")
   private val edgeStringifier = new SmallEdgeStringifier(prefixManager)

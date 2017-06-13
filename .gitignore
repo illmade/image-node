@@ -10,3 +10,5 @@ node/build/Makefile
 flickr/project/
 flickr/target/
 flickr/src/app/resources/
+node/node_modules/
+SparkPlug/

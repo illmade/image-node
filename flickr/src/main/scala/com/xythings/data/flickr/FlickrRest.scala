@@ -36,7 +36,8 @@ class FlickrRest(apiKey : ApiKey) {
 
   val logger = java.util.logging.Logger.getLogger("FlickrRest")
 
-  def photoLocation(photoId : String, format : String = "rest") = s"${header}flickr.photos.geo.getLocation&api_key=${apiKey.getKey}&photo_id=$photoId&format=$format"
+  def photoLocation(photoId : String, format : String = "rest") =
+    s"${header}flickr.photos.geo.getLocation&api_key=${apiKey.getKey}&photo_id=$photoId&format=$format"
 
   def photoInfo(photoId : String, format : String = "rest") = {
     s"${header}flickr.photos.getInfo&api_key=${apiKey.getKey}&photo_id=$photoId&format=$format"
@@ -48,7 +49,7 @@ class FlickrRest(apiKey : ApiKey) {
       case None =>
         ""
       case some =>
-        "&tags=" + java.net.URLEncoder.encode(some.get, "UTF-8")
+        "&tag_mode=all&tags=" + java.net.URLEncoder.encode(some.get, "UTF-8")
     }
 
     val url = s"${header}flickr.photos.search&api_key=${apiKey.getKey}&bbox=${bbox(bounds)}&page=$page$encodedPlace"

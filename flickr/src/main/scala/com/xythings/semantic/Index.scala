@@ -8,6 +8,8 @@ package com.xythings.semantic
   * e.g
   * An index for a resource (a collection of edges with the same identifier) would be:
   * (identifier, Wildcard, Wildcard)
+  *
+  * These objects are just convenient ways of creating index edges
   */
 trait IndexFactory {
   /**

@@ -105,10 +105,15 @@ trait Tag {
 }
 /**
   * Allow simple creation of Tags
+  *
   */
 object Tag {
   /**
     * Create a SimpleTag from a namespace and localName
+    *
+    * - we could force namespace to terminate in a special character # or / (as used in apply(url) but we leave this
+    * to user discretion instead
+    *
     */
   def apply(namespace : String, localName : String): Tag = new SimpleTag(namespace, localName)
   /**

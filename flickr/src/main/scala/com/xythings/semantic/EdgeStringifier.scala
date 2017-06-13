@@ -17,7 +17,7 @@ trait EdgeStringifier {
   */
 object EdgeStringifier {
 
-  def apply(prefixManager : Option[PrefixManager]) = {
+  def apply(prefixManager : Option[PrefixManager] = None) = {
     prefixManager match {
       case None =>
         new SmallEdgeStringifier(PrefixManager(None))

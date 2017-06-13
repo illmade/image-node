@@ -10,5 +10,8 @@ libraryDependencies += "com.google.oauth-client" % "google-oauth-client-servlet"
 libraryDependencies += "com.google.oauth-client" % "google-oauth-client-jetty" % "1.22.0"
 libraryDependencies += "com.google.http-client" % "google-http-client" % "1.22.0"
 libraryDependencies += "com.google.http-client" % "google-http-client-jackson2" % "1.22.0"
+
 libraryDependencies += "org.scala-lang.modules" % "scala-xml_2.12" % "1.0.6"
 libraryDependencies += "org.scala-lang" % "scala-library" % "2.12.2"
+
+libraryDependencies ++= Seq("org.specs2" %% "specs2-core" % "3.8.9" % "test")

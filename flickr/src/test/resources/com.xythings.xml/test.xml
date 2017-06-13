@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE rdf:RDF [
+        <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#">
+        <!ENTITY geometry "http://data.xythings.com/namespace/geometry/">
+        ]>
+<rdf:RDF
+        xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'
+        xmlns:rdfs='http://www.w3.org/2000/01/rdf-schema#'
+        xmlns:dfns1='http://data.xythings.com/namespace/measure/'
+        xmlns:geometry='http://data.xythings.com/namespace/geometry/'
+>
+
+    <rdf:Description rdf:about='http://data.xythings.com/namespace/flickr/ie/Alsatian'>
+        <rdfs:label>Alsatian</rdfs:label>
+        <geometry:pointsR2 rdfs:Datatype="&geometry;pointsR2">List((53.345799,-6.269341))</geometry:pointsR2>
+        <geometry:polygon rdfs:Datatype="&geometry;pointsR2">List((53.345799,-6.269341), (53.345799,-6.269341))</geometry:polygon>
+        <dfns1:count rdfs:Datatype="&xsd;int">1</dfns1:count>
+        <dfns1:uniqueCount rdfs:Datatype="&xsd;int">1</dfns1:uniqueCount>
+    </rdf:Description>
+</rdf:RDF>

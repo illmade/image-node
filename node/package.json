@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./bin/www",
+    "test": "jasmine"
   },
   "dependencies": {
     "body-parser": "~1.16.0",
@@ -14,6 +15,17 @@
     "jade": "~1.11.0",
     "morgan": "~1.7.0",
     "nan": "^2.5.1",
+    "request": "^2.81.0",
     "serve-favicon": "~2.3.2"
+  },
+  "devDependencies": {
+    "jasmine": "^2.6.0",
+    "jasmine-core": "^2.6.3",
+    "karma": "^1.7.0",
+    "karma-chrome-launcher": "^2.1.1",
+    "karma-jasmine": "^1.1.0",
+    "karma-requirejs": "^1.1.0",
+    "karma-safari-launcher": "^1.0.0",
+    "requirejs": "^2.3.3"
   }
 }

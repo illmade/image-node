@@ -36,6 +36,8 @@ function sendImageData(time, blob, mime, dest, wrapper) {
     
 	var docConsole=document.getElementById("console");
 	
+	console.log(docConsole);
+	
 	var start = window.performance.now();
 
 	var content = document.createTextNode("checking: " + dest);
@@ -65,7 +67,8 @@ function sendImageData(time, blob, mime, dest, wrapper) {
           var json = JSON.parse(xhr.responseText);
           wrapper.apply(json);
         } else {
-          console.error(xhr.statusText);
+          console.log(xhr.status);
+          wrapper.apply("fail");
         }
       }
     };

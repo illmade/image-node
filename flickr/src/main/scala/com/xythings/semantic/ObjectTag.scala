@@ -48,7 +48,8 @@ sealed class CastObjectTag(val namespace : String, val local : Any, objectCaster
     */
   require(objectCaster.getCast(namespace)!=None, "No cast for namespace: " + namespace)
 
-  override def toString = "(" + namespace + "[" + objectCaster.cast(this).get + "]" + objectCaster.castStringIdentifier(namespace) + ")"
+  override def toString = "(" + namespace + "[" + objectCaster.cast(this).get + "]" +
+    objectCaster.castStringIdentifier(namespace) + ")"
 
 }
 /**
@@ -56,7 +57,8 @@ sealed class CastObjectTag(val namespace : String, val local : Any, objectCaster
   */
 object ObjectTag {
 
-  def apply(namespace : String, local : Any, objectCaster : ObjectCaster = SimpleObjectCaster) = new CastObjectTag(namespace, local, objectCaster)
+  def apply(namespace : String, local : Any, objectCaster : ObjectCaster = SimpleObjectCaster) =
+    new CastObjectTag(namespace, local, objectCaster)
 
 }
 /**
@@ -67,6 +69,7 @@ object SimpleObjectCaster extends ObjectCaster {
   val INTEGER_MAPPING = typeMapping(libraries.XmlSchemaTags.INTEGER)
   val INT_MAPPING = typeMapping(libraries.XmlSchemaTags.INT)
   val DOUBLE_MAPPING = typeMapping(libraries.XmlSchemaTags.DOUBLE)
+  val STRING_MAPPING = typeMapping(libraries.XmlSchemaTags.STRING)
   val DECIMAL_MAPPING = typeMapping(libraries.XmlSchemaTags.DECIMAL)
   val FLOAT_MAPPING = typeMapping(libraries.XmlSchemaTags.FLOAT)
   val DATE_MAPPING = typeMapping(libraries.XmlSchemaTags.DATE)
@@ -79,6 +82,7 @@ object SimpleObjectCaster extends ObjectCaster {
     INTEGER_MAPPING,
     FLOAT_MAPPING,
     DOUBLE_MAPPING,
+    STRING_MAPPING,
     DECIMAL_MAPPING,
     DATE_MAPPING,
     POINT_R2_MAPPING,
@@ -110,6 +114,8 @@ object SimpleObjectCaster extends ObjectCaster {
         "^^&xsd;decimal"
       case DATE_MAPPING._1 =>
         "^^&xsd;date"
+      case STRING_MAPPING._1 =>
+        "^^&xsd;string"
       case POINT_R2_MAPPING._1 =>
         "^^&geometry;pointR2"
       case POINTS_R2_MAPPING._1 =>
@@ -123,7 +129,7 @@ object SimpleObjectCaster extends ObjectCaster {
 
   private val doubleNumber = """(\d\d)""".r
   /**
-    * Generally the toString method is good enough for our simple casting, it will always succeed.
+    * Generally the toString method is good enough for our simple casting.
     * Dates could cause trouble if we wanted to preserve values through file - database read/write cycles
     */
   def cast(tag : ObjectTag): Option[String] = {
@@ -131,6 +137,7 @@ object SimpleObjectCaster extends ObjectCaster {
       case calendar : java.util.Calendar =>
         //We might want to check the namespace to decide which fields to show
         val year = calendar.get(java.util.Calendar.YEAR)
+        //The *insanity* of 0 based month settings!
         val month = (calendar.get(java.util.Calendar.MONTH) + 1).toString match {
           case doubleNumber(number : String) =>
             number

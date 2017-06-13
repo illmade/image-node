@@ -4,6 +4,10 @@ package com.xythings.semantic
   * Created by tim on 28/04/2017.
   */
 object ObjectTools {
+
+  def getTag(number: Double) : Tag = {
+    TypeTag(libraries.XmlSchemaTags.DOUBLE, number)
+  }
   /**
     * For a doubleTag we just grab the local value
     */
@@ -19,6 +23,10 @@ object ObjectTools {
       case _ =>
         None
     }
+  }
+
+  def getTag(number: Float) : Tag = {
+    TypeTag(libraries.XmlSchemaTags.FLOAT, number)
   }
   /**
     * For a floatTag we just grab the local value
@@ -36,6 +44,10 @@ object ObjectTools {
         None
     }
   }
+
+  def getTag(number: Int) : Tag = {
+    TypeTag(libraries.XmlSchemaTags.INT, number)
+  }
   /**
     * For an Int Tag we just grab the local value
     */
@@ -51,6 +63,10 @@ object ObjectTools {
       case _ =>
         None
     }
+  }
+
+  def getTag(point: (Double, Double)) : Tag = {
+    TypeTag(libraries.XyGeometryTags.POINT_R2, point)
   }
   /**
     * This is perhaps not the most elegant but we attempt through process to make it stable
